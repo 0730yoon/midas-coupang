@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&family=Jua&family=Montserrat:wght@400;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root {
   --bg: #f0f2f5;
@@ -173,6 +174,18 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 .btn-add:hover { background:var(--accent-light); }
 .btn-add-lg { background:var(--accent); color:#fff; border:none; border-radius:var(--radius-md); padding:9px 20px; font-size:13px; cursor:pointer; font-family:'Noto Sans KR',sans-serif; font-weight:700; box-shadow:0 2px 8px rgba(91,94,244,.35); }
 .btn-add-lg:hover { opacity:.88; }
+
+/* Report Upload */
+.upload-zone { border:2px dashed var(--border2); border-radius:var(--radius-md); padding:28px 16px; text-align:center; cursor:pointer; color:var(--text-secondary); font-size:13px; font-weight:500; transition:all .15s; background:var(--surface2); user-select:none; }
+.upload-zone:hover, .upload-zone.drag-over { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
+.upload-zone.has-file { border-color:var(--success); background:var(--success-light); color:var(--success); }
+.rpt-wrap { margin-top:12px; overflow:auto; max-height:380px; border:1px solid var(--border); border-radius:var(--radius-md); }
+.rpt-tbl { width:100%; border-collapse:collapse; font-size:11px; }
+.rpt-tbl th { background:var(--surface2); padding:6px 10px; border-bottom:2px solid var(--border); text-align:left; white-space:nowrap; font-size:10px; color:var(--text-secondary); font-weight:700; position:sticky; top:0; z-index:1; }
+.rpt-tbl td { padding:5px 10px; border-bottom:1px solid var(--surface3); white-space:nowrap; font-size:11px; font-family:'DM Mono',monospace; }
+.rpt-tbl tr:last-child td { border-bottom:none; }
+.rpt-tbl tr:hover td { background:var(--surface2); }
+@media (max-width:700px) { #report-grid { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -200,7 +213,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
     <button class="tab-btn active" onclick="switchTab('daily')">📅 일별 입력</button>
     <button class="tab-btn" onclick="switchTab('weekly')">📆 주간 현황</button>
     <button class="tab-btn" onclick="switchTab('monthly')">📈 월간 분석</button>
-    <button class="tab-btn" onclick="switchTab('margin')">📋 마진 참고표</button>
+    <button class="tab-btn" onclick="switchTab('report')">📁 리포트</button>
     <button class="tab-btn" onclick="switchTab('settings')">⚙️ 설정</button>
   </div>
 </nav>
@@ -282,22 +295,39 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
   </div>
 </div>
 
-<!-- 마진 참고표 탭 -->
-<div id="tab-margin" class="tab-panel">
-  <div class="section-label sl-amber">📋 제품별 옵션 마진 참고표</div>
-  <div class="tbl-wrap">
-    <table style="width:100%;border-collapse:collapse;background:#fff;font-size:13px">
-      <thead>
-        <tr>
-          <th style="background:#f8f9fb;padding:10px 14px;text-align:left;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;min-width:110px;font-size:11px;color:#3d4a5c">상품</th>
-          <th style="background:#fffbeb;padding:10px 14px;text-align:center;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;min-width:140px;font-size:11px;color:#92400e">광고비 세팅</th>
-          <th style="background:#f8f9fb;padding:10px 14px;text-align:center;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;min-width:130px;font-size:11px;color:#3d4a5c">옵션</th>
-          <th style="background:#f8f9fb;padding:10px 14px;text-align:right;border-bottom:2px solid #dde1e9;min-width:100px;font-size:11px;color:#3d4a5c">마진 (원)</th>
-        </tr>
-      </thead>
-      <tbody id="margin-body">
-      </tbody>
-    </table>
+<!-- 리포트 탭 -->
+<div id="tab-report" class="tab-panel">
+  <div class="date-bar">
+    <input type="date" id="report-date" onchange="loadReportTab()">
+    <button class="date-btn" onclick="setReportDate(0)">오늘</button>
+    <button class="date-btn" onclick="setReportDate(-1)">어제</button>
+    <button class="date-btn" onclick="setReportDate(-2)">그저께</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="report-grid">
+    <!-- 매출 리포트 -->
+    <div class="card" style="padding:18px">
+      <div class="section-label sl-blue" style="margin-bottom:14px">🛒 쿠팡 매출 리포트</div>
+      <div class="upload-zone" id="zone-sales"
+        onclick="document.getElementById('file-sales').click()"
+        ondrop="dropFile(event,'sales')" ondragover="dragOver(event,'sales')" ondragleave="dragLeave('sales')">
+        <input type="file" id="file-sales" accept=".csv,.xlsx,.xls" style="display:none" onchange="pickFile(this,'sales')">
+        <div id="zone-sales-lbl">📂 클릭하거나 파일을 드래그해서 올리세요<br>
+          <span style="font-size:11px;color:var(--text-muted);margin-top:4px;display:block">CSV · XLSX · XLS 지원</span></div>
+      </div>
+      <div id="preview-sales"></div>
+    </div>
+    <!-- 광고 리포트 -->
+    <div class="card" style="padding:18px">
+      <div class="section-label sl-rose" style="margin-bottom:14px">📣 쿠팡 광고 리포트</div>
+      <div class="upload-zone" id="zone-ads"
+        onclick="document.getElementById('file-ads').click()"
+        ondrop="dropFile(event,'ads')" ondragover="dragOver(event,'ads')" ondragleave="dragLeave('ads')">
+        <input type="file" id="file-ads" accept=".csv,.xlsx,.xls" style="display:none" onchange="pickFile(this,'ads')">
+        <div id="zone-ads-lbl">📂 클릭하거나 파일을 드래그해서 올리세요<br>
+          <span style="font-size:11px;color:var(--text-muted);margin-top:4px;display:block">CSV · XLSX · XLS 지원</span></div>
+      </div>
+      <div id="preview-ads"></div>
+    </div>
   </div>
 </div>
 
@@ -1004,43 +1034,126 @@ function saveSetting(settingKey, productId, val) {
   saveSettings(settingKey, s);
 }
 
-// ── Margin Table ──────────────────────────────────────────────
-function loadMarginTab() {
-  const tbody = document.getElementById('margin-body');
-  if (!tbody) return;
-  const tdBase = 'padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9';
-  const tdLast = 'padding:8px 14px;border-bottom:1px solid #eef0f4';
-  let html = '';
-  PRODUCTS.forEach((p, pi) => {
-    const info = PRODUCT_OPTIONS[p.id] || { adSetting: '', options: [] };
-    const opts = info.options;
-    const N = Math.max(opts.length, 1);
-    const adHtml = info.adSetting.replace(/\n/g,'<br>');
-    const isLast = pi === PRODUCTS.length - 1;
-    const btm = isLast ? '2px solid #dde1e9' : '2px solid #dde1e9';
-    if (opts.length === 0) {
-      html += `<tr>
-        <td style="${tdBase};font-weight:700;border-bottom:${btm}">${p.name}</td>
-        <td style="${tdBase};text-align:center;font-size:11px;color:#92400e;background:#fffbeb;border-bottom:${btm}">${adHtml}</td>
-        <td style="${tdBase};text-align:center;color:#8896aa;border-bottom:${btm}">-</td>
-        <td style="${tdLast};text-align:right;color:#8896aa;border-bottom:${btm}">-</td>
-      </tr>`;
+// ── Report Tab ────────────────────────────────────────────────
+function initReportDate() {
+  const el = document.getElementById('report-date');
+  if (!el.value) { const d = new Date(); el.value = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+}
+function setReportDate(offset) {
+  const d = new Date(); d.setDate(d.getDate() + offset);
+  document.getElementById('report-date').value = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+  loadReportTab();
+}
+function getReportDateKey() {
+  initReportDate();
+  const v = document.getElementById('report-date').value;
+  const [y,m,d] = v.split('-');
+  return `cp-rpt-${+y}-${+m}-${+d}`;
+}
+
+function loadReportTab() {
+  initReportDate();
+  const key = getReportDateKey();
+  const data = loadDay(key);
+  ['sales','ads'].forEach(type => {
+    const zone = document.getElementById('zone-'+type);
+    const lbl  = document.getElementById('zone-'+type+'-lbl');
+    const prev = document.getElementById('preview-'+type);
+    const saved = data[type];
+    if (saved) {
+      zone.classList.add('has-file');
+      lbl.innerHTML = `✅ <strong>${saved.name}</strong><br><span style="font-size:11px">${saved.rows.length}행 로드됨 · 재업로드하려면 클릭</span>`;
+      renderReportTable(type, saved.rows);
     } else {
-      opts.forEach((opt, i) => {
-        const isLastOpt = i === opts.length - 1;
-        const ob = isLastOpt ? btm : '1px solid #eef0f4';
-        html += `<tr>`;
-        if (i === 0) {
-          html += `<td rowspan="${N}" style="${tdBase};font-weight:700;vertical-align:middle;border-bottom:${btm}">${p.name}</td>
-            <td rowspan="${N}" style="${tdBase};text-align:center;font-size:11px;color:#92400e;background:#fffbeb;vertical-align:middle;border-bottom:${btm}">${adHtml}</td>`;
-        }
-        html += `<td style="${tdBase};text-align:center;border-bottom:${ob}">${opt.name}</td>
-          <td style="${tdLast};text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a;border-bottom:${ob}">${opt.margin.toLocaleString('ko-KR')}</td>
-        </tr>`;
-      });
+      zone.classList.remove('has-file');
+      lbl.innerHTML = `📂 클릭하거나 파일을 드래그해서 올리세요<br><span style="font-size:11px;color:var(--text-muted);margin-top:4px;display:block">CSV · XLSX · XLS 지원</span>`;
+      prev.innerHTML = '';
     }
   });
-  tbody.innerHTML = html;
+}
+
+function pickFile(input, type) {
+  const file = input.files[0];
+  if (!file) return;
+  readReportFile(file, type);
+  input.value = '';
+}
+function dropFile(e, type) {
+  e.preventDefault();
+  dragLeave(type);
+  const file = e.dataTransfer.files[0];
+  if (file) readReportFile(file, type);
+}
+function dragOver(e, type) {
+  e.preventDefault();
+  document.getElementById('zone-'+type).classList.add('drag-over');
+}
+function dragLeave(type) {
+  document.getElementById('zone-'+type).classList.remove('drag-over');
+}
+
+function readReportFile(file, type) {
+  const isExcel = /\.xlsx?$/i.test(file.name);
+  const reader = new FileReader();
+  reader.onload = e => {
+    let rows;
+    try {
+      if (isExcel && typeof XLSX !== 'undefined') {
+        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      } else {
+        rows = parseCSVData(typeof e.target.result === 'string' ? e.target.result : new TextDecoder('utf-8').decode(e.target.result));
+      }
+    } catch(err) { rows = [['파일 파싱 오류: ' + err.message]]; }
+
+    rows = rows.filter(r => r.some(c => c !== '' && c !== null && c !== undefined));
+    const saved = { name: file.name, rows: rows.slice(0, 1000) };
+
+    const key = getReportDateKey();
+    const data = loadDay(key);
+    data[type] = saved;
+    saveDay(key, data);
+
+    const zone = document.getElementById('zone-'+type);
+    const lbl  = document.getElementById('zone-'+type+'-lbl');
+    zone.classList.add('has-file');
+    lbl.innerHTML = `✅ <strong>${file.name}</strong><br><span style="font-size:11px">${saved.rows.length}행 로드됨 · 재업로드하려면 클릭</span>`;
+    renderReportTable(type, saved.rows);
+  };
+  if (isExcel) reader.readAsArrayBuffer(file);
+  else reader.readAsText(file, 'utf-8');
+}
+
+function parseCSVData(text) {
+  return text.split(/\r?\n/).map(line => {
+    const cells = []; let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if ((c === ',' || c === '\t') && !inQ) { cells.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    cells.push(cur.trim());
+    return cells;
+  });
+}
+
+function renderReportTable(type, rows) {
+  const el = document.getElementById('preview-'+type);
+  if (!rows || rows.length === 0) { el.innerHTML = ''; return; }
+  const header = rows[0];
+  const body   = rows.slice(1);
+  let html = `<div class="rpt-wrap"><table class="rpt-tbl"><thead><tr>
+    <th style="color:var(--text-muted);font-weight:400">#</th>
+    ${header.map(h => `<th>${h ?? ''}</th>`).join('')}
+  </tr></thead><tbody>`;
+  body.forEach((row, i) => {
+    html += `<tr><td style="color:var(--text-muted)">${i+1}</td>${row.map(c => `<td>${c ?? ''}</td>`).join('')}</tr>`;
+  });
+  html += `</tbody></table></div>
+  <div style="font-size:11px;color:var(--text-muted);margin-top:6px;text-align:right">${body.length}행 · ${header.length}열</div>`;
+  el.innerHTML = html;
 }
 
 // ── Product Admin ─────────────────────────────────────────────
@@ -1145,7 +1258,7 @@ function switchTab(t) {
   if (t === 'daily') loadDailyTab();
   if (t === 'weekly') loadWeeklyTab();
   if (t === 'monthly') loadMonthlyTab();
-  if (t === 'margin') loadMarginTab();
+  if (t === 'report') loadReportTab();
   if (t === 'settings') loadSettingsTab();
 }
 
