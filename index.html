@@ -568,9 +568,9 @@ function signInGuest() {
   applyRole();
   loadDailyTab();
 }
-function signOut() {
+async function signOut() {
   sessionStorage.removeItem('cp-role');
-  if (_supa) _supa.auth.signOut();
+  if (_supa) await _supa.auth.signOut();
   window.location.reload();
 }
 
@@ -1323,6 +1323,7 @@ function initHeader() {
 function init() {
   loadProductsConfig();
   initHeader();
+  showAuth(true);
   if (sessionStorage.getItem('cp-role') === 'guest') {
     _role = 'guest'; applyRole(); showAuth(false); loadDailyTab(); return;
   }
