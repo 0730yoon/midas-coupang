@@ -269,16 +269,110 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 <div id="tab-margin" class="tab-panel">
   <div class="section-label sl-amber">📋 제품별 옵션 마진 참고표</div>
   <div class="tbl-wrap">
-    <table class="week-table" id="margin-table" style="min-width:500px">
+    <table style="width:100%;border-collapse:collapse;background:#fff;font-size:13px">
       <thead>
         <tr>
-          <th style="text-align:left;min-width:110px">상품</th>
-          <th style="min-width:130px">광고비 세팅</th>
-          <th style="min-width:130px">옵션</th>
-          <th style="min-width:90px">마진</th>
+          <th style="background:#f8f9fb;padding:10px 14px;text-align:left;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;min-width:110px;font-size:11px;color:#3d4a5c">상품</th>
+          <th style="background:#fffbeb;padding:10px 14px;text-align:center;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;min-width:140px;font-size:11px;color:#92400e">광고비 세팅</th>
+          <th style="background:#f8f9fb;padding:10px 14px;text-align:center;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;min-width:130px;font-size:11px;color:#3d4a5c">옵션</th>
+          <th style="background:#f8f9fb;padding:10px 14px;text-align:right;border-bottom:2px solid #dde1e9;min-width:100px;font-size:11px;color:#3d4a5c">마진 (원)</th>
         </tr>
       </thead>
-      <tbody id="margin-body"></tbody>
+      <tbody>
+        <!-- 로로스윗 -->
+        <tr><td rowspan="5" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle;border-top:2px solid #dde1e9">로로스윗</td>
+            <td rowspan="5" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb;border-top:2px solid #dde1e9">3만<br>로하스 500%</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">20개(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">4,016</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">40개(윙)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">12,707</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">60개(윙)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">16,251</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">80개(윙)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">19,946</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">100개(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">15,000</td></tr>
+        <!-- 생강청 -->
+        <tr><td rowspan="6" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle">생강청</td>
+            <td rowspan="6" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb">제로생강청 포함</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">1개(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">3,950</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">2개(윙)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">9,211</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">2개(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">9,107</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">3개(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">11,801</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">4개(윙)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">16,600</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">5개(윙)</td>
+            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">17,598</td></tr>
+        <!-- 생강청 제로 -->
+        <tr><td rowspan="8" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle">생강청 제로</td>
+            <td rowspan="8" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb">3만<br>로하스 500%</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">1개(윙)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">5,534</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">1개(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">5,534</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">2개(윙)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">12,295</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">2개(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">12,295</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">3개(윙)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">16,811</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">3개(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">16,811</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">5개(윙)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">29,913</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">5개(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">29,913</td></tr>
+        <!-- 힘업 -->
+        <tr><td rowspan="4" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle">힘업<br><span style="font-size:11px;color:#8896aa;font-weight:400">목표 500%</span></td>
+            <td rowspan="4" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb">일반 6만(2/4)<br>로하스 400%</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">1개(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">43,091</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">2개(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">72,423</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">3개(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">104,822</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">4개(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">139,572</td></tr>
+        <!-- 100Z -->
+        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;font-weight:700">100Z</td>
+            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;background:#fffbeb">1.5만 / 500%</td>
+            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">(그로스)</td>
+            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">14,988</td></tr>
+        <!-- 판빙빙(윙) AI -->
+        <tr><td rowspan="2" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle">판빙빙(윙) AI</td>
+            <td rowspan="2" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb">4만 / 400%</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">프리미엄</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">27,532</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">슬림</td>
+            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">24,220</td></tr>
+        <!-- 원텍(윙) -->
+        <tr><td rowspan="2" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle">원텍(윙)</td>
+            <td rowspan="2" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb">3만<br>목표 450%</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">헤어뱅</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">155,665</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">블랙</td>
+            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">277,200</td></tr>
+        <!-- 용융소금 -->
+        <tr><td rowspan="4" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle">용융소금</td>
+            <td rowspan="4" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb">AI에 포함</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">1개</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">44,415</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">2개</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">83,179</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">3개</td>
+            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">112,310</td></tr>
+        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">5개</td>
+            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">167,055</td></tr>
+        <!-- 기타 -->
+        <tr><td style="padding:8px 14px;border-right:1px solid #dde1e9;font-weight:700">기타</td>
+            <td style="padding:8px 14px;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;background:#fffbeb">AI에 포함<br>목표 400%</td>
+            <td style="padding:8px 14px;border-right:1px solid #dde1e9;text-align:center;color:#8896aa">-</td>
+            <td style="padding:8px 14px;text-align:right;color:#8896aa">-</td></tr>
+      </tbody>
     </table>
   </div>
 </div>
