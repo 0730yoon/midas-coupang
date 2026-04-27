@@ -185,6 +185,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
     <button class="tab-btn active" onclick="switchTab('daily')">📅 일별 입력</button>
     <button class="tab-btn" onclick="switchTab('weekly')">📆 주간 현황</button>
     <button class="tab-btn" onclick="switchTab('monthly')">📈 월간 분석</button>
+    <button class="tab-btn" onclick="switchTab('margin')">📋 마진 참고표</button>
     <button class="tab-btn" onclick="switchTab('settings')">⚙️ 설정</button>
   </div>
 </nav>
@@ -264,6 +265,24 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
   </div>
 </div>
 
+<!-- 마진 참고표 탭 -->
+<div id="tab-margin" class="tab-panel">
+  <div class="section-label sl-amber">📋 제품별 옵션 마진 참고표</div>
+  <div class="tbl-wrap">
+    <table class="week-table" id="margin-table" style="min-width:500px">
+      <thead>
+        <tr>
+          <th style="text-align:left;min-width:110px">상품</th>
+          <th style="min-width:130px">광고비 세팅</th>
+          <th style="min-width:130px">옵션</th>
+          <th style="min-width:90px">마진</th>
+        </tr>
+      </thead>
+      <tbody id="margin-body"></tbody>
+    </table>
+  </div>
+</div>
+
 <!-- 설정 탭 -->
 <div id="tab-settings" class="tab-panel">
   <div class="section-label sl-amber">💰 제품별 광고비 세팅</div>
@@ -319,6 +338,58 @@ const PRODUCTS = [
 ];
 
 const COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#64748b'];
+
+const PRODUCT_OPTIONS = {
+  lolo:    { adSetting: '3만 / 로하스 500%', options: [
+    { name: '20개(그로스)', margin: 4016 },
+    { name: '40개(윙)',     margin: 12707 },
+    { name: '60개(윙)',     margin: 16251 },
+    { name: '80개(윙)',     margin: 19946 },
+    { name: '100개(그로스)', margin: 15000 },
+  ]},
+  ginger:  { adSetting: '제로생강청 포함', options: [
+    { name: '1개(그로스)', margin: 3950 },
+    { name: '2개(윙)',     margin: 9211 },
+    { name: '2개(그로스)', margin: 9107 },
+    { name: '3개(그로스)', margin: 11801 },
+    { name: '4개(윙)',     margin: 16600 },
+    { name: '5개(윙)',     margin: 17598 },
+  ]},
+  ginger0: { adSetting: '3만 / 로하스 500%', options: [
+    { name: '1개(윙)',     margin: 5534 },
+    { name: '1개(그로스)', margin: 5534 },
+    { name: '2개(윙)',     margin: 12295 },
+    { name: '2개(그로스)', margin: 12295 },
+    { name: '3개(윙)',     margin: 16811 },
+    { name: '3개(그로스)', margin: 16811 },
+    { name: '5개(윙)',     margin: 29913 },
+    { name: '5개(그로스)', margin: 29913 },
+  ]},
+  himup:   { adSetting: '6만(2/4) / 로하스 400%\n목표 500%', options: [
+    { name: '1개(그로스)', margin: 43091 },
+    { name: '2개(그로스)', margin: 72423 },
+    { name: '3개(그로스)', margin: 104822 },
+    { name: '4개(그로스)', margin: 139572 },
+  ]},
+  z100:    { adSetting: '1.5만 / 500%', options: [
+    { name: '(그로스)', margin: 14988 },
+  ]},
+  pabing:  { adSetting: '4만 / 400%', options: [
+    { name: '프리미엄', margin: 27532 },
+    { name: '슬림',     margin: 24220 },
+  ]},
+  wontek:  { adSetting: '3만 / 목표 450%', options: [
+    { name: '헤어뱅', margin: 155665 },
+    { name: '블랙',   margin: 277200 },
+  ]},
+  salt:    { adSetting: 'AI에 포함', options: [
+    { name: '1개', margin: 44415 },
+    { name: '2개', margin: 83179 },
+    { name: '3개', margin: 112310 },
+    { name: '5개', margin: 167055 },
+  ]},
+  etc:     { adSetting: 'AI에 포함 / 목표 400%', options: [] },
+};
 
 // ── State ─────────────────────────────────────────────────────
 let _weekOffset = 0;
@@ -832,6 +903,39 @@ function saveSetting(settingKey, productId, val) {
   saveSettings(settingKey, s);
 }
 
+// ── Margin Table ──────────────────────────────────────────────
+function loadMarginTab() {
+  const tbody = document.getElementById('margin-body');
+  let html = '';
+  PRODUCTS.forEach(p => {
+    const info = PRODUCT_OPTIONS[p.id];
+    if (!info) return;
+    const opts = info.options;
+    const rows = Math.max(opts.length, 1);
+    const adSettingLines = info.adSetting.split('\n');
+    const adSettingHtml = adSettingLines.map(l=>`<span style="display:block">${l}</span>`).join('');
+    if (opts.length === 0) {
+      html += `<tr>
+        <td style="font-weight:700;font-family:'Noto Sans KR',sans-serif">${p.name}</td>
+        <td style="font-size:11px;color:#92400e;font-family:'Noto Sans KR',sans-serif">${adSettingHtml}</td>
+        <td>-</td><td>-</td>
+      </tr>`;
+    } else {
+      opts.forEach((opt, i) => {
+        html += `<tr>`;
+        if (i === 0) {
+          html += `<td rowspan="${rows}" style="font-weight:700;font-family:'Noto Sans KR',sans-serif;vertical-align:middle;border-right:1px solid var(--border)">${p.name}</td>
+          <td rowspan="${rows}" style="font-size:11px;color:#92400e;font-family:'Noto Sans KR',sans-serif;vertical-align:middle;border-right:1px solid var(--border)">${adSettingHtml}</td>`;
+        }
+        html += `<td style="font-family:'Noto Sans KR',sans-serif;font-size:12px">${opt.name}</td>
+        <td style="color:var(--success);font-weight:700">${opt.margin.toLocaleString('ko-KR')}</td>
+        </tr>`;
+      });
+    }
+  });
+  tbody.innerHTML = html;
+}
+
 // ── Tab Switch ────────────────────────────────────────────────
 function switchTab(t) {
   document.querySelectorAll('.tab-btn').forEach(el => el.classList.toggle('active', el.getAttribute('onclick') === `switchTab('${t}')`));
@@ -840,6 +944,7 @@ function switchTab(t) {
   if (t === 'daily') loadDailyTab();
   if (t === 'weekly') loadWeeklyTab();
   if (t === 'monthly') loadMonthlyTab();
+  if (t === 'margin') loadMarginTab();
   if (t === 'settings') loadSettingsTab();
 }
 
