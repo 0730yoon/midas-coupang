@@ -205,14 +205,13 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
       <thead>
         <tr>
           <th class="sticky-col">제품</th>
-          <th>클릭수</th>
-          <th>전환수</th>
-          <th>광고매출</th>
+          <th>총판매</th>
+          <th>광고판매</th>
+          <th>광고판매 마진</th>
           <th>광고비</th>
-          <th>총매출</th>
-          <th>ROAS</th>
-          <th>총ROAS</th>
-          <th>매출이익</th>
+          <th>광고 로아스</th>
+          <th>총판매 마진</th>
+          <th>총판매 로아스</th>
         </tr>
       </thead>
       <tbody id="daily-body"></tbody>
@@ -249,10 +248,10 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
   </div>
   <div id="monthly-summary" class="sum-grid" style="margin-bottom:20px"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px" id="monthly-charts">
-    <div class="chart-card"><div class="chart-title">📈 일별 매출이익 추이</div><canvas id="chart-profit" height="180"></canvas></div>
-    <div class="chart-card"><div class="chart-title">📊 일별 ROAS 추이</div><canvas id="chart-roas" height="180"></canvas></div>
-    <div class="chart-card"><div class="chart-title">🥧 제품별 광고매출 비중</div><canvas id="chart-pie" height="180"></canvas></div>
-    <div class="chart-card"><div class="chart-title">💸 광고비 vs 매출이익</div><canvas id="chart-bar" height="180"></canvas></div>
+    <div class="chart-card"><div class="chart-title">📈 일별 총판매 마진 추이</div><canvas id="chart-profit" height="180"></canvas></div>
+    <div class="chart-card"><div class="chart-title">📊 일별 광고 ROAS 추이</div><canvas id="chart-roas" height="180"></canvas></div>
+    <div class="chart-card"><div class="chart-title">🥧 제품별 광고판매 비중</div><canvas id="chart-pie" height="180"></canvas></div>
+    <div class="chart-card"><div class="chart-title">💸 광고비 vs 총판매 마진</div><canvas id="chart-bar" height="180"></canvas></div>
   </div>
   <div class="section-label sl-violet">📋 주차별 현황</div>
   <div class="tbl-wrap" style="margin-bottom:20px">
@@ -267,13 +266,8 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 <!-- 설정 탭 -->
 <div id="tab-settings" class="tab-panel">
   <div class="section-label sl-amber">🎯 제품별 목표 ROAS 설정</div>
-  <div class="card" style="padding:20px;margin-bottom:20px">
-    <div id="target-roas-list"></div>
-  </div>
-  <div class="section-label sl-rose">🏷️ 제품별 단가 설정</div>
   <div class="card" style="padding:20px">
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">단가 입력 시 전환수 × 단가로 광고매출 자동계산 옵션 활성화</div>
-    <div id="unit-price-list"></div>
+    <div id="target-roas-list"></div>
   </div>
 </div>
 
@@ -318,12 +312,11 @@ const PRODUCTS = [
   { id: 'etc',     name: '기타' },
 ];
 
-const METRICS = ['clicks','conversions','adRevenue','adSpend','totalRevenue'];
 const COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#64748b'];
 
 // ── State ─────────────────────────────────────────────────────
-let _weekOffset = 0;   // weeks from current week
-let _monthOffset = 0;  // months from current month
+let _weekOffset = 0;
+let _monthOffset = 0;
 let _charts = {};
 
 // ── Keys ──────────────────────────────────────────────────────
@@ -410,10 +403,11 @@ function signOut() {
 
 // ── Calculations ──────────────────────────────────────────────
 function calcRow(r) {
-  const roas = r.adSpend > 0 ? (r.adRevenue / r.adSpend * 100) : 0;
+  const adMargin = (r.adRevenue || 0) - (r.adSpend || 0);
+  const adRoas = r.adSpend > 0 ? (r.adRevenue / r.adSpend * 100) : 0;
+  const totalMargin = (r.totalRevenue || 0) - (r.adSpend || 0);
   const totalRoas = r.adSpend > 0 ? (r.totalRevenue / r.adSpend * 100) : 0;
-  const profit = r.totalRevenue - r.adSpend;
-  return { ...r, roas, totalRoas, profit };
+  return { ...r, adMargin, adRoas, totalMargin, totalRoas };
 }
 function roasClass(roas, target) {
   if (!target || target === 0) return '';
@@ -431,32 +425,29 @@ function fmtRoas(n) {
 }
 
 function sumDayData(days) {
-  const tot = { clicks:0, conversions:0, adRevenue:0, adSpend:0, totalRevenue:0 };
+  const tot = { totalRevenue:0, adRevenue:0, adSpend:0 };
   days.forEach(d => {
     const data = loadDay(dayKey(d));
     PRODUCTS.forEach(p => {
       const r = data[p.id] || {};
-      tot.clicks += +r.clicks||0;
-      tot.conversions += +r.conversions||0;
+      tot.totalRevenue += +r.totalRevenue||0;
       tot.adRevenue += +r.adRevenue||0;
       tot.adSpend += +r.adSpend||0;
-      tot.totalRevenue += +r.totalRevenue||0;
     });
   });
   return calcRow(tot);
 }
+
 function sumDayDataByProduct(days) {
   const res = {};
   PRODUCTS.forEach(p => {
-    res[p.id] = { clicks:0, conversions:0, adRevenue:0, adSpend:0, totalRevenue:0 };
+    res[p.id] = { totalRevenue:0, adRevenue:0, adSpend:0 };
     days.forEach(d => {
       const data = loadDay(dayKey(d));
       const r = data[p.id] || {};
-      res[p.id].clicks += +r.clicks||0;
-      res[p.id].conversions += +r.conversions||0;
+      res[p.id].totalRevenue += +r.totalRevenue||0;
       res[p.id].adRevenue += +r.adRevenue||0;
       res[p.id].adSpend += +r.adSpend||0;
-      res[p.id].totalRevenue += +r.totalRevenue||0;
     });
     res[p.id] = calcRow(res[p.id]);
   });
@@ -467,14 +458,16 @@ function sumDayDataByProduct(days) {
 function renderSummary(elId, days) {
   const t = sumDayData(days);
   const el = document.getElementById(elId);
-  const roasCls = t.roas >= 300 ? 'roas-good' : t.roas >= 150 ? 'roas-mid' : 'roas-bad';
+  const adRoasCls = t.adRoas >= 300 ? 'roas-good' : t.adRoas >= 150 ? 'roas-mid' : (t.adSpend > 0 ? 'roas-bad' : '');
+  const totalRoasCls = t.totalRoas >= 300 ? 'roas-good' : t.totalRoas >= 150 ? 'roas-mid' : (t.adSpend > 0 ? 'roas-bad' : '');
   el.innerHTML = `
-    <div class="sum-card"><div class="sum-val">${fmtNum(t.adRevenue)}</div><div class="sum-lbl">광고매출 (원)</div></div>
+    <div class="sum-card"><div class="sum-val">${fmtNum(t.totalRevenue)}</div><div class="sum-lbl">총판매 (원)</div></div>
+    <div class="sum-card"><div class="sum-val">${fmtNum(t.adRevenue)}</div><div class="sum-lbl">광고판매 (원)</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:${t.adMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.adMargin)}</div><div class="sum-lbl">광고판매 마진 (원)</div></div>
     <div class="sum-card"><div class="sum-val">${fmtNum(t.adSpend)}</div><div class="sum-lbl">광고비 (원)</div></div>
-    <div class="sum-card"><div class="sum-val ${roasCls}">${fmtRoas(t.roas)}</div><div class="sum-lbl">ROAS</div></div>
-    <div class="sum-card"><div class="sum-val">${fmtNum(t.totalRevenue)}</div><div class="sum-lbl">총매출 (원)</div></div>
-    <div class="sum-card"><div class="sum-val" style="color:${t.profit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.profit)}</div><div class="sum-lbl">매출이익 (원)</div></div>
-    <div class="sum-card"><div class="sum-val">${fmtNum(t.conversions)}</div><div class="sum-lbl">전환수</div></div>
+    <div class="sum-card"><div class="sum-val ${adRoasCls}">${fmtRoas(t.adRoas)}</div><div class="sum-lbl">광고 ROAS</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.totalMargin)}</div><div class="sum-lbl">총판매 마진 (원)</div></div>
+    <div class="sum-card"><div class="sum-val ${totalRoasCls}">${fmtRoas(t.totalRoas)}</div><div class="sum-lbl">총판매 ROAS</div></div>
   `;
 }
 
@@ -495,42 +488,39 @@ function loadDailyTab() {
   const data = loadDay(key);
   const targets = loadSettings('cp-targets', {});
   const tbody = document.getElementById('daily-body');
-  const days = [getDailyDate()];
-  renderSummary('daily-summary', days);
+  renderSummary('daily-summary', [getDailyDate()]);
 
   let rows = '';
   PRODUCTS.forEach(p => {
     const r = data[p.id] || {};
-    const c = calcRow({ clicks:+r.clicks||0, conversions:+r.conversions||0, adRevenue:+r.adRevenue||0, adSpend:+r.adSpend||0, totalRevenue:+r.totalRevenue||0 });
+    const c = calcRow({ totalRevenue:+r.totalRevenue||0, adRevenue:+r.adRevenue||0, adSpend:+r.adSpend||0 });
     const tgt = targets[p.id] || 0;
-    const cls = c.adSpend > 0 ? roasClass(c.roas, tgt) : '';
-    const tCls = c.adSpend > 0 ? roasClass(c.totalRoas, tgt) : '';
+    const adRoasCls = c.adSpend > 0 ? roasClass(c.adRoas, tgt) : '';
+    const totalRoasCls = c.adSpend > 0 ? roasClass(c.totalRoas, tgt) : '';
+    const hasData = c.adSpend > 0 || c.adRevenue > 0 || c.totalRevenue > 0;
     rows += `<tr>
       <td class="sticky-col">${p.name}</td>
-      <td><input type="number" min="0" value="${r.clicks||''}" placeholder="0" onchange="saveCell('${key}','${p.id}','clicks',this.value)" oninput="updateCalc(this,'${p.id}')"></td>
-      <td><input type="number" min="0" value="${r.conversions||''}" placeholder="0" onchange="saveCell('${key}','${p.id}','conversions',this.value)" oninput="updateCalc(this,'${p.id}')"></td>
-      <td><input type="number" min="0" value="${r.adRevenue||''}" placeholder="0" id="ar-${p.id}" onchange="saveCell('${key}','${p.id}','adRevenue',this.value)" oninput="updateCalc(this,'${p.id}')"></td>
-      <td><input type="number" min="0" value="${r.adSpend||''}" placeholder="0" onchange="saveCell('${key}','${p.id}','adSpend',this.value)" oninput="updateCalc(this,'${p.id}')"></td>
-      <td><input type="number" min="0" value="${r.totalRevenue||''}" placeholder="0" onchange="saveCell('${key}','${p.id}','totalRevenue',this.value)" oninput="updateCalc(this,'${p.id}')"></td>
-      <td class="calc-cell ${cls}" id="roas-${p.id}">${c.adSpend>0?fmtRoas(c.roas):'-'}</td>
-      <td class="calc-cell ${tCls}" id="troas-${p.id}">${c.adSpend>0?fmtRoas(c.totalRoas):'-'}</td>
-      <td class="calc-cell" id="profit-${p.id}" style="color:${c.profit>0?'var(--success)':c.profit<0?'var(--destructive)':'var(--text-muted)'}">${c.adSpend>0||c.totalRevenue>0?fmtNum(c.profit):'-'}</td>
+      <td><input type="number" min="0" value="${r.totalRevenue||''}" placeholder="0" onchange="saveCell('${key}','${p.id}','totalRevenue',this.value)" oninput="updateCalc(this,'${p.id}','${key}')"></td>
+      <td><input type="number" min="0" value="${r.adRevenue||''}" placeholder="0" onchange="saveCell('${key}','${p.id}','adRevenue',this.value)" oninput="updateCalc(this,'${p.id}','${key}')"></td>
+      <td class="calc-cell" id="adm-${p.id}" style="color:${c.adMargin>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(c.adMargin):'-'}</td>
+      <td><input type="number" min="0" value="${r.adSpend||''}" placeholder="0" onchange="saveCell('${key}','${p.id}','adSpend',this.value)" oninput="updateCalc(this,'${p.id}','${key}')"></td>
+      <td class="calc-cell ${adRoasCls}" id="adroas-${p.id}">${c.adSpend>0?fmtRoas(c.adRoas):'-'}</td>
+      <td class="calc-cell" id="tm-${p.id}" style="color:${c.totalMargin>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(c.totalMargin):'-'}</td>
+      <td class="calc-cell ${totalRoasCls}" id="troas-${p.id}">${c.adSpend>0?fmtRoas(c.totalRoas):'-'}</td>
     </tr>`;
   });
 
   // Total row
   const t = sumDayData([getDailyDate()]);
-  const tgt0 = 0;
   rows += `<tr class="total-row">
     <td class="sticky-col">합계</td>
-    <td class="calc-cell">${fmtNum(t.clicks)}</td>
-    <td class="calc-cell">${fmtNum(t.conversions)}</td>
-    <td class="calc-cell">${fmtNum(t.adRevenue)}</td>
-    <td class="calc-cell">${fmtNum(t.adSpend)}</td>
     <td class="calc-cell">${fmtNum(t.totalRevenue)}</td>
-    <td class="calc-cell ${roasClass(t.roas,0)}" id="roas-total">${fmtRoas(t.roas)}</td>
-    <td class="calc-cell" id="troas-total">${fmtRoas(t.totalRoas)}</td>
-    <td class="calc-cell" style="color:${t.profit>=0?'var(--success)':'var(--destructive)'}" id="profit-total">${fmtNum(t.profit)}</td>
+    <td class="calc-cell">${fmtNum(t.adRevenue)}</td>
+    <td class="calc-cell" style="color:${t.adMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.adMargin)}</td>
+    <td class="calc-cell">${fmtNum(t.adSpend)}</td>
+    <td class="calc-cell ${roasClass(t.adRoas,0)}">${fmtRoas(t.adRoas)}</td>
+    <td class="calc-cell" style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.totalMargin)}</td>
+    <td class="calc-cell">${fmtRoas(t.totalRoas)}</td>
   </tr>`;
 
   tbody.innerHTML = rows;
@@ -545,37 +535,32 @@ function saveCell(key, pid, field, val) {
   loadDailyTab();
 }
 
-function updateCalc(input, pid) {
-  // Debounced save + recalc
+function updateCalc(input, pid, key) {
   clearTimeout(_saveTimers[pid]);
   _saveTimers[pid] = setTimeout(() => {
-    const key = getDailyKey();
     const data = loadDay(key);
     if (!data[pid]) data[pid] = {};
-    // read all inputs for this product
     const row = input.closest('tr');
     const inputs = row.querySelectorAll('input');
-    const fields = ['clicks','conversions','adRevenue','adSpend','totalRevenue'];
+    const fields = ['totalRevenue', 'adRevenue', 'adSpend'];
     fields.forEach((f,i) => { data[pid][f] = +inputs[i].value || 0; });
-
-    // auto-fill adRevenue from unit price × conversions if adRevenue is 0
-    const prices = loadSettings('cp-prices', {});
-    if (!data[pid].adRevenue && prices[pid] && data[pid].conversions) {
-      data[pid].adRevenue = prices[pid] * data[pid].conversions;
-      const arInput = document.getElementById('ar-'+pid);
-      if (arInput) arInput.value = data[pid].adRevenue;
-    }
-
     saveDay(key, data);
+
     const c = calcRow(data[pid]);
     const targets = loadSettings('cp-targets', {});
     const tgt = targets[pid] || 0;
-    const roasEl = document.getElementById('roas-'+pid);
+    const hasData = c.adSpend > 0 || c.adRevenue > 0 || c.totalRevenue > 0;
+
+    const admEl = document.getElementById('adm-'+pid);
+    const adroasEl = document.getElementById('adroas-'+pid);
+    const tmEl = document.getElementById('tm-'+pid);
     const troasEl = document.getElementById('troas-'+pid);
-    const profitEl = document.getElementById('profit-'+pid);
-    if (roasEl) { roasEl.textContent = c.adSpend>0?fmtRoas(c.roas):'-'; roasEl.className='calc-cell '+(c.adSpend>0?roasClass(c.roas,tgt):''); }
-    if (troasEl) { troasEl.textContent = c.adSpend>0?fmtRoas(c.totalRoas):'-'; }
-    if (profitEl) { profitEl.textContent = (c.adSpend>0||c.totalRevenue>0)?fmtNum(c.profit):'-'; profitEl.style.color = c.profit>0?'var(--success)':c.profit<0?'var(--destructive)':'var(--text-muted)'; }
+
+    if (admEl) { admEl.textContent = hasData ? fmtNum(c.adMargin) : '-'; admEl.style.color = c.adMargin >= 0 ? 'var(--success)' : 'var(--destructive)'; }
+    if (adroasEl) { adroasEl.textContent = c.adSpend > 0 ? fmtRoas(c.adRoas) : '-'; adroasEl.className = 'calc-cell ' + (c.adSpend > 0 ? roasClass(c.adRoas, tgt) : ''); }
+    if (tmEl) { tmEl.textContent = hasData ? fmtNum(c.totalMargin) : '-'; tmEl.style.color = c.totalMargin >= 0 ? 'var(--success)' : 'var(--destructive)'; }
+    if (troasEl) { troasEl.textContent = c.adSpend > 0 ? fmtRoas(c.totalRoas) : '-'; troasEl.className = 'calc-cell ' + (c.adSpend > 0 ? roasClass(c.totalRoas, tgt) : ''); }
+
     renderSummary('daily-summary', [getDailyDate()]);
   }, 400);
 }
@@ -598,27 +583,32 @@ function loadWeeklyTab() {
 
 function renderWeeklyDayTable(days) {
   const el = document.getElementById('weekly-table');
-  const cols = ['광고매출','광고비','ROAS','총매출','매출이익'];
+  const cols = ['총판매','광고판매','광고판매 마진','광고비','광고 ROAS','총판매 마진','총ROAS'];
   let html = `<thead><tr><th>요일</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
-  let totals = {adRevenue:0,adSpend:0,totalRevenue:0,conversions:0};
   days.forEach((d,i) => {
     const t = sumDayData([d]);
-    totals.adRevenue += t.adRevenue; totals.adSpend += t.adSpend;
-    totals.totalRevenue += t.totalRevenue; totals.conversions += t.conversions;
     const hasData = t.adSpend > 0 || t.adRevenue > 0 || t.totalRevenue > 0;
     html += `<tr>
       <td>${DAYS_KO[i]} (${(d.getMonth()+1)}/${d.getDate()})</td>
-      <td>${hasData?fmtNum(t.adRevenue):'-'}</td>
-      <td>${hasData?fmtNum(t.adSpend):'-'}</td>
-      <td class="${hasData&&t.adSpend>0?roasClass(t.roas,0):''}">${hasData&&t.adSpend>0?fmtRoas(t.roas):'-'}</td>
       <td>${hasData?fmtNum(t.totalRevenue):'-'}</td>
-      <td style="color:${t.profit>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(t.profit):'-'}</td>
+      <td>${hasData?fmtNum(t.adRevenue):'-'}</td>
+      <td style="color:${t.adMargin>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(t.adMargin):'-'}</td>
+      <td>${hasData?fmtNum(t.adSpend):'-'}</td>
+      <td class="${hasData&&t.adSpend>0?roasClass(t.adRoas,0):''}">${hasData&&t.adSpend>0?fmtRoas(t.adRoas):'-'}</td>
+      <td style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(t.totalMargin):'-'}</td>
+      <td>${hasData&&t.adSpend>0?fmtRoas(t.totalRoas):'-'}</td>
     </tr>`;
   });
-  const wt = calcRow(totals);
-  html += `<tr class="total-row"><td>주간 합계</td><td>${fmtNum(wt.adRevenue)}</td><td>${fmtNum(wt.adSpend)}</td>
-    <td class="${roasClass(wt.roas,0)}">${fmtRoas(wt.roas)}</td><td>${fmtNum(wt.totalRevenue)}</td>
-    <td style="color:${wt.profit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(wt.profit)}</td></tr>`;
+  const wt = sumDayData(days);
+  html += `<tr class="total-row"><td>주간 합계</td>
+    <td>${fmtNum(wt.totalRevenue)}</td>
+    <td>${fmtNum(wt.adRevenue)}</td>
+    <td style="color:${wt.adMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(wt.adMargin)}</td>
+    <td>${fmtNum(wt.adSpend)}</td>
+    <td class="${roasClass(wt.adRoas,0)}">${fmtRoas(wt.adRoas)}</td>
+    <td style="color:${wt.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(wt.totalMargin)}</td>
+    <td>${fmtRoas(wt.totalRoas)}</td>
+  </tr>`;
   el.innerHTML = html + '</tbody>';
 }
 
@@ -626,28 +616,33 @@ function renderWeeklyProductTable(days) {
   const el = document.getElementById('weekly-product-table');
   const byProd = sumDayDataByProduct(days);
   const targets = loadSettings('cp-targets', {});
-  const cols = ['광고매출','광고비','ROAS','총매출','매출이익','전환수'];
+  const cols = ['총판매','광고판매','광고판매 마진','광고비','광고 ROAS','총판매 마진','총ROAS'];
   let html = `<thead><tr><th>제품</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
-  let tot = {adRevenue:0,adSpend:0,totalRevenue:0,conversions:0};
   PRODUCTS.forEach(p => {
     const r = byProd[p.id];
     const hasData = r.adSpend>0||r.adRevenue>0||r.totalRevenue>0;
-    tot.adRevenue+=r.adRevenue; tot.adSpend+=r.adSpend; tot.totalRevenue+=r.totalRevenue; tot.conversions+=r.conversions;
     const tgt = targets[p.id]||0;
     html += `<tr>
       <td>${p.name}</td>
-      <td>${hasData?fmtNum(r.adRevenue):'-'}</td>
-      <td>${hasData?fmtNum(r.adSpend):'-'}</td>
-      <td class="${hasData&&r.adSpend>0?roasClass(r.roas,tgt):''}">${hasData&&r.adSpend>0?fmtRoas(r.roas):'-'}</td>
       <td>${hasData?fmtNum(r.totalRevenue):'-'}</td>
-      <td style="color:${r.profit>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(r.profit):'-'}</td>
-      <td>${hasData?fmtNum(r.conversions):'-'}</td>
+      <td>${hasData?fmtNum(r.adRevenue):'-'}</td>
+      <td style="color:${r.adMargin>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(r.adMargin):'-'}</td>
+      <td>${hasData?fmtNum(r.adSpend):'-'}</td>
+      <td class="${hasData&&r.adSpend>0?roasClass(r.adRoas,tgt):''}">${hasData&&r.adSpend>0?fmtRoas(r.adRoas):'-'}</td>
+      <td style="color:${r.totalMargin>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(r.totalMargin):'-'}</td>
+      <td>${hasData&&r.adSpend>0?fmtRoas(r.totalRoas):'-'}</td>
     </tr>`;
   });
-  const wt = calcRow(tot);
-  html += `<tr class="total-row"><td>합계</td><td>${fmtNum(wt.adRevenue)}</td><td>${fmtNum(wt.adSpend)}</td>
-    <td>${fmtRoas(wt.roas)}</td><td>${fmtNum(wt.totalRevenue)}</td>
-    <td style="color:${wt.profit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(wt.profit)}</td><td>${fmtNum(wt.conversions)}</td></tr>`;
+  const wt = sumDayData(days);
+  html += `<tr class="total-row"><td>합계</td>
+    <td>${fmtNum(wt.totalRevenue)}</td>
+    <td>${fmtNum(wt.adRevenue)}</td>
+    <td style="color:${wt.adMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(wt.adMargin)}</td>
+    <td>${fmtNum(wt.adSpend)}</td>
+    <td>${fmtRoas(wt.adRoas)}</td>
+    <td style="color:${wt.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(wt.totalMargin)}</td>
+    <td>${fmtRoas(wt.totalRoas)}</td>
+  </tr>`;
   el.innerHTML = html + '</tbody>';
 }
 
@@ -667,30 +662,28 @@ function loadMonthlyTab() {
 }
 
 function renderMonthlyCharts(days) {
-  // daily profit + roas
-  const labels = [], profits = [], roasArr = [];
+  const labels = [], totalMargins = [], adRoasArr = [];
   days.forEach(d => {
     const t = sumDayData([d]);
     if (t.adSpend > 0 || t.totalRevenue > 0) {
       labels.push(`${d.getMonth()+1}/${d.getDate()}`);
-      profits.push(t.profit);
-      roasArr.push(Math.round(t.roas));
+      totalMargins.push(t.totalMargin);
+      adRoasArr.push(Math.round(t.adRoas));
     }
   });
 
   destroyChart('chart-profit');
   _charts['chart-profit'] = new Chart(document.getElementById('chart-profit'), {
-    type:'line', data:{ labels, datasets:[{ label:'매출이익', data:profits, borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,.1)', tension:.4, fill:true, pointRadius:3 }] },
+    type:'line', data:{ labels, datasets:[{ label:'총판매 마진', data:totalMargins, borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,.1)', tension:.4, fill:true, pointRadius:3 }] },
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false},ticks:{font:{size:10}}}, y:{ticks:{callback:v=>fmtNum(v),font:{size:10}}} } }
   });
 
   destroyChart('chart-roas');
   _charts['chart-roas'] = new Chart(document.getElementById('chart-roas'), {
-    type:'line', data:{ labels, datasets:[{ label:'ROAS', data:roasArr, borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,.1)', tension:.4, fill:true, pointRadius:3 }] },
+    type:'line', data:{ labels, datasets:[{ label:'광고 ROAS', data:adRoasArr, borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,.1)', tension:.4, fill:true, pointRadius:3 }] },
     options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false},ticks:{font:{size:10}}}, y:{ticks:{callback:v=>v+'%',font:{size:10}}} } }
   });
 
-  // pie by product
   const byProd = sumDayDataByProduct(days);
   const pieLabels = PRODUCTS.map(p=>p.name);
   const pieData = PRODUCTS.map(p=>byProd[p.id].adRevenue);
@@ -700,15 +693,14 @@ function renderMonthlyCharts(days) {
     options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{font:{size:11},boxWidth:12} } } }
   });
 
-  // bar: adSpend vs profit
   const barLabels = PRODUCTS.map(p=>p.name);
   const spends = PRODUCTS.map(p=>byProd[p.id].adSpend);
-  const profs = PRODUCTS.map(p=>byProd[p.id].profit);
+  const margins = PRODUCTS.map(p=>byProd[p.id].totalMargin);
   destroyChart('chart-bar');
   _charts['chart-bar'] = new Chart(document.getElementById('chart-bar'), {
     type:'bar', data:{ labels:barLabels, datasets:[
       { label:'광고비', data:spends, backgroundColor:'rgba(239,68,68,.7)' },
-      { label:'매출이익', data:profs, backgroundColor:'rgba(22,163,74,.7)' }
+      { label:'총판매 마진', data:margins, backgroundColor:'rgba(22,163,74,.7)' }
     ] },
     options:{ responsive:true, plugins:{legend:{labels:{font:{size:11},boxWidth:12}}}, scales:{ x:{grid:{display:false},ticks:{font:{size:10}}}, y:{ticks:{callback:v=>fmtNum(v),font:{size:10}}} } }
   });
@@ -718,7 +710,6 @@ function destroyChart(id) { if (_charts[id]) { _charts[id].destroy(); delete _ch
 
 function renderMonthlyWeekTable(days, monthDate) {
   const el = document.getElementById('monthly-week-table');
-  // Group by week
   const weeks = [];
   let cur = [];
   days.forEach(d => {
@@ -727,25 +718,32 @@ function renderMonthlyWeekTable(days, monthDate) {
   });
   if (cur.length) weeks.push(cur);
 
-  const cols = ['광고매출','광고비','ROAS','총매출','매출이익'];
+  const cols = ['총판매','광고판매','광고판매 마진','광고비','광고 ROAS','총판매 마진','총ROAS'];
   let html = `<thead><tr><th>주차</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
-  let tot = {adRevenue:0,adSpend:0,totalRevenue:0};
   weeks.forEach((wk,i) => {
     const t = sumDayData(wk);
-    tot.adRevenue+=t.adRevenue; tot.adSpend+=t.adSpend; tot.totalRevenue+=t.totalRevenue;
     const fmt = d=>`${d.getMonth()+1}/${d.getDate()}`;
     html += `<tr>
       <td>${i+1}주차 (${fmt(wk[0])}~${fmt(wk[wk.length-1])})</td>
-      <td>${fmtNum(t.adRevenue)}</td><td>${fmtNum(t.adSpend)}</td>
-      <td class="${roasClass(t.roas,0)}">${fmtRoas(t.roas)}</td>
       <td>${fmtNum(t.totalRevenue)}</td>
-      <td style="color:${t.profit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.profit)}</td>
+      <td>${fmtNum(t.adRevenue)}</td>
+      <td style="color:${t.adMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.adMargin)}</td>
+      <td>${fmtNum(t.adSpend)}</td>
+      <td class="${roasClass(t.adRoas,0)}">${fmtRoas(t.adRoas)}</td>
+      <td style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.totalMargin)}</td>
+      <td>${fmtRoas(t.totalRoas)}</td>
     </tr>`;
   });
-  const mt = calcRow(tot);
-  html += `<tr class="total-row"><td>월간 합계</td><td>${fmtNum(mt.adRevenue)}</td><td>${fmtNum(mt.adSpend)}</td>
-    <td>${fmtRoas(mt.roas)}</td><td>${fmtNum(mt.totalRevenue)}</td>
-    <td style="color:${mt.profit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(mt.profit)}</td></tr>`;
+  const mt = sumDayData(days);
+  html += `<tr class="total-row"><td>월간 합계</td>
+    <td>${fmtNum(mt.totalRevenue)}</td>
+    <td>${fmtNum(mt.adRevenue)}</td>
+    <td style="color:${mt.adMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(mt.adMargin)}</td>
+    <td>${fmtNum(mt.adSpend)}</td>
+    <td>${fmtRoas(mt.adRoas)}</td>
+    <td style="color:${mt.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(mt.totalMargin)}</td>
+    <td>${fmtRoas(mt.totalRoas)}</td>
+  </tr>`;
   el.innerHTML = html + '</tbody>';
 }
 
@@ -753,39 +751,41 @@ function renderMonthlyProductTable(days) {
   const el = document.getElementById('monthly-product-table');
   const byProd = sumDayDataByProduct(days);
   const targets = loadSettings('cp-targets', {});
-  const cols = ['광고매출','광고비','ROAS','총매출','매출이익','전환수'];
+  const cols = ['총판매','광고판매','광고판매 마진','광고비','광고 ROAS','총판매 마진','총ROAS'];
   let html = `<thead><tr><th>제품</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
-  let tot = {adRevenue:0,adSpend:0,totalRevenue:0,conversions:0};
   PRODUCTS.forEach(p => {
     const r = byProd[p.id];
     const hasData = r.adSpend>0||r.adRevenue>0||r.totalRevenue>0;
-    tot.adRevenue+=r.adRevenue; tot.adSpend+=r.adSpend; tot.totalRevenue+=r.totalRevenue; tot.conversions+=r.conversions;
     const tgt = targets[p.id]||0;
     html += `<tr>
       <td>${p.name}</td>
-      <td>${hasData?fmtNum(r.adRevenue):'-'}</td>
-      <td>${hasData?fmtNum(r.adSpend):'-'}</td>
-      <td class="${hasData&&r.adSpend>0?roasClass(r.roas,tgt):''}">${hasData&&r.adSpend>0?fmtRoas(r.roas):'-'}</td>
       <td>${hasData?fmtNum(r.totalRevenue):'-'}</td>
-      <td style="color:${r.profit>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(r.profit):'-'}</td>
-      <td>${hasData?fmtNum(r.conversions):'-'}</td>
+      <td>${hasData?fmtNum(r.adRevenue):'-'}</td>
+      <td style="color:${r.adMargin>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(r.adMargin):'-'}</td>
+      <td>${hasData?fmtNum(r.adSpend):'-'}</td>
+      <td class="${hasData&&r.adSpend>0?roasClass(r.adRoas,tgt):''}">${hasData&&r.adSpend>0?fmtRoas(r.adRoas):'-'}</td>
+      <td style="color:${r.totalMargin>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(r.totalMargin):'-'}</td>
+      <td>${hasData&&r.adSpend>0?fmtRoas(r.totalRoas):'-'}</td>
     </tr>`;
   });
-  const mt = calcRow(tot);
-  html += `<tr class="total-row"><td>합계</td><td>${fmtNum(mt.adRevenue)}</td><td>${fmtNum(mt.adSpend)}</td>
-    <td>${fmtRoas(mt.roas)}</td><td>${fmtNum(mt.totalRevenue)}</td>
-    <td style="color:${mt.profit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(mt.profit)}</td><td>${fmtNum(mt.conversions)}</td></tr>`;
+  const mt = sumDayData(days);
+  html += `<tr class="total-row"><td>합계</td>
+    <td>${fmtNum(mt.totalRevenue)}</td>
+    <td>${fmtNum(mt.adRevenue)}</td>
+    <td style="color:${mt.adMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(mt.adMargin)}</td>
+    <td>${fmtNum(mt.adSpend)}</td>
+    <td>${fmtRoas(mt.adRoas)}</td>
+    <td style="color:${mt.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(mt.totalMargin)}</td>
+    <td>${fmtRoas(mt.totalRoas)}</td>
+  </tr>`;
   el.innerHTML = html + '</tbody>';
 }
 
 // ── Settings Tab ──────────────────────────────────────────────
 function loadSettingsTab() {
   const targets = loadSettings('cp-targets', {});
-  const prices = loadSettings('cp-prices', {});
   const trEl = document.getElementById('target-roas-list');
-  const prEl = document.getElementById('unit-price-list');
   let trHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">`;
-  let prHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">`;
   PRODUCTS.forEach(p => {
     trHtml += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md)">
       <span style="font-size:13px;font-weight:600">${p.name}</span>
@@ -794,16 +794,8 @@ function loadSettingsTab() {
         <span style="font-size:11px;color:var(--text-muted)">%</span>
       </div>
     </div>`;
-    prHtml += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md)">
-      <span style="font-size:13px;font-weight:600">${p.name}</span>
-      <div style="display:flex;align-items:center;gap:4px">
-        <input class="target-input" style="width:90px" type="number" value="${prices[p.id]||''}" placeholder="단가" onchange="saveSetting('cp-prices','${p.id}',this.value)">
-        <span style="font-size:11px;color:var(--text-muted)">원</span>
-      </div>
-    </div>`;
   });
   trEl.innerHTML = trHtml + '</div>';
-  prEl.innerHTML = prHtml + '</div>';
 }
 
 function saveSetting(settingKey, productId, val) {
