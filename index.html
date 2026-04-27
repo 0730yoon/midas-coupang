@@ -207,12 +207,12 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
         <tr>
           <th class="sticky-col">제품</th>
           <th style="background:#fffbeb;color:#92400e;border-color:#fde68a">광고비 세팅</th>
-          <th>광고비</th>
-          <th>광고판매</th>
           <th>옵션</th>
           <th>판매수량</th>
           <th>마진단가</th>
           <th>소계</th>
+          <th>광고비</th>
+          <th>광고판매</th>
           <th>총판매마진</th>
           <th>광고ROAS</th>
           <th>순이익</th>
@@ -698,9 +698,9 @@ function loadDailyTab() {
 
     if (!hasOpts) {
       rows += `<tr id="row-main-${p.id}" style="border-top:2px solid var(--border2)">
-        ${nameCell}${settingCell}${adSpendCell}${adRevCell}
+        ${nameCell}${settingCell}
         <td colspan="4" style="text-align:center;color:var(--text-muted);font-size:11px">-</td>
-        ${tmCell}${roasCell}${npCell}
+        ${adSpendCell}${adRevCell}${tmCell}${roasCell}${npCell}
       </tr>`;
     } else {
       opts.forEach((opt, i) => {
@@ -716,7 +716,7 @@ function loadDailyTab() {
           <td id="sub_${oid}" style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:${sub>0?'var(--success)':'var(--text-muted)'}">${qty>0?fmtNum(sub):'-'}</td>`;
         if (i === 0) {
           rows += `<tr id="row-main-${p.id}" style="border-top:2px solid var(--border2)">
-            ${nameCell}${settingCell}${adSpendCell}${adRevCell}${optCells}${tmCell}${roasCell}${npCell}
+            ${nameCell}${settingCell}${optCells}${adSpendCell}${adRevCell}${tmCell}${roasCell}${npCell}
           </tr>`;
         } else {
           rows += `<tr>${optCells}</tr>`;
@@ -729,9 +729,9 @@ function loadDailyTab() {
   rows += `<tr class="total-row">
     <td class="sticky-col">합계</td>
     <td style="background:#fffbeb"></td>
+    <td colspan="4"></td>
     <td class="calc-cell">${fmtNum(t.adSpend)}</td>
     <td class="calc-cell">${fmtNum(t.adRevenue)}</td>
-    <td colspan="4"></td>
     <td class="calc-cell" style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.totalMargin)}</td>
     <td class="calc-cell ${roasClass(t.adRoas,0)}">${fmtRoas(t.adRoas)}</td>
     <td class="calc-cell" style="color:${t.netProfit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.netProfit)}</td>
@@ -812,9 +812,9 @@ function refreshTotalRow() {
   const trow = document.querySelector('#daily-body .total-row');
   if (!trow) return;
   const cells = trow.querySelectorAll('td');
-  // cols: 0=합계, 1=세팅, 2=광고비, 3=광고판매, 4=colspan옵션영역, 5=총판매마진, 6=광고ROAS, 7=순이익
-  if (cells[2]) cells[2].textContent = fmtNum(t.adSpend);
-  if (cells[3]) cells[3].textContent = fmtNum(t.adRevenue);
+  // cols: 0=합계, 1=세팅, 2=colspan옵션영역, 3=광고비, 4=광고판매, 5=총판매마진, 6=광고ROAS, 7=순이익
+  if (cells[3]) cells[3].textContent = fmtNum(t.adSpend);
+  if (cells[4]) cells[4].textContent = fmtNum(t.adRevenue);
   if (cells[5]) { cells[5].textContent = fmtNum(t.totalMargin); cells[5].style.color = t.totalMargin >= 0 ? 'var(--success)' : 'var(--destructive)'; }
   if (cells[6]) cells[6].textContent = fmtRoas(t.adRoas);
   if (cells[7]) { cells[7].textContent = fmtNum(t.netProfit); cells[7].style.color = t.netProfit >= 0 ? 'var(--success)' : 'var(--destructive)'; }
