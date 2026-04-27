@@ -568,15 +568,12 @@ function signInGuest() {
   applyRole();
   loadDailyTab();
 }
-async function signOut() {
-  _user = null;
-  _role = null;
+function signOut() {
   sessionStorage.removeItem('cp-role');
-  applyRole();
-  if (_supa) {
-    try { await _supa.auth.signOut(); } catch(e) {}
-  }
-  showAuth(true);
+  Object.keys(localStorage).forEach(k => {
+    if (k.startsWith('sb-')) localStorage.removeItem(k);
+  });
+  window.location.reload();
 }
 
 // ── Guest helper ──────────────────────────────────────────────
@@ -1334,15 +1331,12 @@ function init() {
   }
   if (_supa) {
     _supa.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        _user = null; _role = null; applyRole(); showAuth(true); return;
-      }
       _user = session?.user || null;
       if (_user) {
         _role = 'admin'; applyRole(); showAuth(false);
         await pullFromSupabase(); loadProductsConfig(); loadDailyTab();
       } else {
-        showAuth(true);
+        _role = null; applyRole(); showAuth(true);
       }
     });
   } else {
