@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>마이다스 쿠팡 광고 분석</title>
+<title>마이다스 쿠팡 매출 분석</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&family=Jua&family=Montserrat:wght@400;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
@@ -183,7 +183,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
         <span class="m-line"></span>
         <span class="m-corp">CORPORATION</span>
       </span>
-      📊 쿠팡 광고 분석
+      📊 쿠팡 매출 분석
     </span>
     <div style="display:flex;align-items:center;gap:10px">
       <span class="save-dot" id="save-dot" title="저장 상태"></span>
@@ -194,7 +194,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 
 <nav class="tab-nav">
   <div class="tab-nav-inner">
-    <button class="tab-btn active" onclick="switchTab('daily')">📅 일별 입력</button>
+    <button class="tab-btn active" onclick="switchTab('daily')">📅 일별 현황</button>
     <button class="tab-btn" onclick="switchTab('weekly')">📆 주간 현황</button>
     <button class="tab-btn" onclick="switchTab('monthly')">📈 월간 분석</button>
     <button class="tab-btn" onclick="switchTab('report')">📁 리포트</button>
@@ -204,7 +204,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 
 <main class="main">
 
-<!-- 일별 입력 탭 -->
+<!-- 일별 현황 탭 -->
 <div id="tab-daily" class="tab-panel active">
   <div class="date-bar">
     <input type="date" id="daily-date" onchange="loadDailyTab()">
