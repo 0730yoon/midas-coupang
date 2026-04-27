@@ -205,6 +205,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
       <thead>
         <tr>
           <th class="sticky-col">제품</th>
+          <th style="background:#fffbeb;color:#92400e;border-color:#fde68a">광고비 세팅</th>
           <th>총판매</th>
           <th>광고판매</th>
           <th>광고판매 마진</th>
@@ -265,6 +266,11 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 
 <!-- 설정 탭 -->
 <div id="tab-settings" class="tab-panel">
+  <div class="section-label sl-amber">💰 제품별 광고비 세팅</div>
+  <div class="card" style="padding:20px;margin-bottom:20px">
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">일별 입력 테이블에 참고 표시됩니다. 비워두면 기본값(이미지 기준)이 사용됩니다.</div>
+    <div id="budget-list"></div>
+  </div>
   <div class="section-label sl-amber">🎯 제품별 목표 ROAS 설정</div>
   <div class="card" style="padding:20px">
     <div id="target-roas-list"></div>
@@ -301,15 +307,15 @@ let _user = null;
 
 // ── Products ──────────────────────────────────────────────────
 const PRODUCTS = [
-  { id: 'lolo',    name: '로로스윗' },
-  { id: 'ginger',  name: '생강청' },
-  { id: 'ginger0', name: '생강청 제로' },
-  { id: 'himup',   name: '힘업' },
-  { id: 'z100',    name: '100Z' },
-  { id: 'pabing',  name: '판빙빙(윙) AI' },
-  { id: 'wontek',  name: '원텍(윙)' },
-  { id: 'salt',    name: '용융소금' },
-  { id: 'etc',     name: '기타' },
+  { id: 'lolo',    name: '로로스윗',      defBudget: 30000, defRoas: 500 },
+  { id: 'ginger',  name: '생강청',        defBudget: 0,     defRoas: 0   },
+  { id: 'ginger0', name: '생강청 제로',   defBudget: 30000, defRoas: 500 },
+  { id: 'himup',   name: '힘업',          defBudget: 60000, defRoas: 400 },
+  { id: 'z100',    name: '100Z',          defBudget: 15000, defRoas: 500 },
+  { id: 'pabing',  name: '판빙빙(윙) AI', defBudget: 40000, defRoas: 400 },
+  { id: 'wontek',  name: '원텍(윙)',      defBudget: 30000, defRoas: 450 },
+  { id: 'salt',    name: '용융소금',      defBudget: 0,     defRoas: 0   },
+  { id: 'etc',     name: '기타',          defBudget: 0,     defRoas: 400 },
 ];
 
 const COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#64748b'];
@@ -491,15 +497,20 @@ function loadDailyTab() {
   renderSummary('daily-summary', [getDailyDate()]);
 
   let rows = '';
+  const budgets = loadSettings('cp-budgets', {});
   PRODUCTS.forEach(p => {
     const r = data[p.id] || {};
     const c = calcRow({ totalRevenue:+r.totalRevenue||0, adRevenue:+r.adRevenue||0, adSpend:+r.adSpend||0 });
-    const tgt = targets[p.id] || 0;
+    const tgt = targets[p.id] !== undefined ? targets[p.id] : p.defRoas;
+    const budget = budgets[p.id] !== undefined ? budgets[p.id] : p.defBudget;
     const adRoasCls = c.adSpend > 0 ? roasClass(c.adRoas, tgt) : '';
     const totalRoasCls = c.adSpend > 0 ? roasClass(c.totalRoas, tgt) : '';
     const hasData = c.adSpend > 0 || c.adRevenue > 0 || c.totalRevenue > 0;
+    const budgetOver = budget > 0 && c.adSpend > budget;
+    const budgetLabel = budget > 0 ? `${(budget/10000).toLocaleString()}만${tgt?` / ${tgt}%`:''}` : (tgt ? `${tgt}%` : 'AI포함');
     rows += `<tr>
       <td class="sticky-col">${p.name}</td>
+      <td style="background:#fffbeb;font-size:11px;font-weight:600;color:${budgetOver?'var(--destructive)':'#92400e'};padding:0 8px;white-space:nowrap">${budgetLabel}</td>
       <td><input type="number" min="0" value="${r.totalRevenue||''}" placeholder="0" onchange="saveCell('${key}','${p.id}','totalRevenue',this.value)" oninput="updateCalc(this,'${p.id}','${key}')"></td>
       <td><input type="number" min="0" value="${r.adRevenue||''}" placeholder="0" onchange="saveCell('${key}','${p.id}','adRevenue',this.value)" oninput="updateCalc(this,'${p.id}','${key}')"></td>
       <td class="calc-cell" id="adm-${p.id}" style="color:${c.adMargin>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(c.adMargin):'-'}</td>
@@ -514,6 +525,7 @@ function loadDailyTab() {
   const t = sumDayData([getDailyDate()]);
   rows += `<tr class="total-row">
     <td class="sticky-col">합계</td>
+    <td style="background:#fffbeb"></td>
     <td class="calc-cell">${fmtNum(t.totalRevenue)}</td>
     <td class="calc-cell">${fmtNum(t.adRevenue)}</td>
     <td class="calc-cell" style="color:${t.adMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.adMargin)}</td>
@@ -784,18 +796,34 @@ function renderMonthlyProductTable(days) {
 // ── Settings Tab ──────────────────────────────────────────────
 function loadSettingsTab() {
   const targets = loadSettings('cp-targets', {});
+  const budgets = loadSettings('cp-budgets', {});
   const trEl = document.getElementById('target-roas-list');
+  const bdEl = document.getElementById('budget-list');
+
   let trHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">`;
+  let bdHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">`;
+
   PRODUCTS.forEach(p => {
+    const budgetVal = budgets[p.id] !== undefined ? budgets[p.id] : (p.defBudget || '');
+    const roasVal   = targets[p.id]  !== undefined ? targets[p.id]  : (p.defRoas  || '');
     trHtml += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md)">
       <span style="font-size:13px;font-weight:600">${p.name}</span>
       <div style="display:flex;align-items:center;gap:4px">
-        <input class="target-input" type="number" value="${targets[p.id]||''}" placeholder="300" onchange="saveSetting('cp-targets','${p.id}',this.value)">
+        <input class="target-input" type="number" value="${roasVal}" placeholder="${p.defRoas||'-'}" onchange="saveSetting('cp-targets','${p.id}',this.value)">
         <span style="font-size:11px;color:var(--text-muted)">%</span>
       </div>
     </div>`;
+    bdHtml += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md)">
+      <span style="font-size:13px;font-weight:600">${p.name}</span>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input class="target-input" style="width:80px" type="number" value="${budgetVal}" placeholder="${p.defBudget?(p.defBudget/10000)+'만':'AI포함'}" onchange="saveSetting('cp-budgets','${p.id}',this.value)">
+        <span style="font-size:11px;color:var(--text-muted)">원</span>
+      </div>
+    </div>`;
   });
+
   trEl.innerHTML = trHtml + '</div>';
+  bdEl.innerHTML = bdHtml + '</div>';
 }
 
 function saveSetting(settingKey, productId, val) {
