@@ -158,6 +158,21 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
   .sum-grid { grid-template-columns: repeat(2, 1fr); }
   .header-inner { gap: 8px; }
 }
+
+/* Product Admin */
+.padmin-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); margin-bottom:12px; overflow:hidden; box-shadow:var(--shadow-sm); }
+.padmin-head { background:var(--surface2); border-bottom:1px solid var(--border); padding:10px 14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.padmin-body { padding:10px 14px; }
+.padmin-opt-row { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--surface3); }
+.adm-input { border:1px solid var(--border); border-radius:var(--radius-sm); padding:5px 8px; font-size:12px; background:var(--surface); color:var(--text-primary); font-family:'Noto Sans KR',sans-serif; }
+.adm-input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-light); }
+.adm-input[type=number] { font-family:'DM Mono',monospace; }
+.btn-del { border:1px solid var(--destructive); color:var(--destructive); background:none; border-radius:var(--radius-sm); padding:3px 9px; font-size:11px; cursor:pointer; white-space:nowrap; font-family:'Noto Sans KR',sans-serif; }
+.btn-del:hover { background:var(--destructive-light); }
+.btn-add { border:1px solid var(--accent); color:var(--accent); background:none; border-radius:var(--radius-sm); padding:5px 12px; font-size:12px; cursor:pointer; font-family:'Noto Sans KR',sans-serif; font-weight:500; }
+.btn-add:hover { background:var(--accent-light); }
+.btn-add-lg { background:var(--accent); color:#fff; border:none; border-radius:var(--radius-md); padding:9px 20px; font-size:13px; cursor:pointer; font-family:'Noto Sans KR',sans-serif; font-weight:700; box-shadow:0 2px 8px rgba(91,94,244,.35); }
+.btn-add-lg:hover { opacity:.88; }
 </style>
 </head>
 <body>
@@ -280,100 +295,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
           <th style="background:#f8f9fb;padding:10px 14px;text-align:right;border-bottom:2px solid #dde1e9;min-width:100px;font-size:11px;color:#3d4a5c">마진 (원)</th>
         </tr>
       </thead>
-      <tbody>
-        <!-- 로로스윗 -->
-        <tr><td rowspan="5" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle;border-top:2px solid #dde1e9">로로스윗</td>
-            <td rowspan="5" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb;border-top:2px solid #dde1e9">3만<br>로하스 500%</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">20개(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">4,016</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">40개(윙)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">12,707</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">60개(윙)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">16,251</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">80개(윙)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">19,946</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">100개(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">15,000</td></tr>
-        <!-- 생강청 -->
-        <tr><td rowspan="6" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle">생강청</td>
-            <td rowspan="6" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb">제로생강청 포함</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">1개(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">3,950</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">2개(윙)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">9,211</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">2개(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">9,107</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">3개(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">11,801</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">4개(윙)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">16,600</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">5개(윙)</td>
-            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">17,598</td></tr>
-        <!-- 생강청 제로 -->
-        <tr><td rowspan="8" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle">생강청 제로</td>
-            <td rowspan="8" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb">3만<br>로하스 500%</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">1개(윙)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">5,534</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">1개(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">5,534</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">2개(윙)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">12,295</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">2개(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">12,295</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">3개(윙)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">16,811</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">3개(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">16,811</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">5개(윙)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">29,913</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">5개(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">29,913</td></tr>
-        <!-- 힘업 -->
-        <tr><td rowspan="4" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle">힘업<br><span style="font-size:11px;color:#8896aa;font-weight:400">목표 500%</span></td>
-            <td rowspan="4" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb">일반 6만(2/4)<br>로하스 400%</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">1개(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">43,091</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">2개(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">72,423</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">3개(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">104,822</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">4개(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">139,572</td></tr>
-        <!-- 100Z -->
-        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;font-weight:700">100Z</td>
-            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;background:#fffbeb">1.5만 / 500%</td>
-            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">(그로스)</td>
-            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">14,988</td></tr>
-        <!-- 판빙빙(윙) AI -->
-        <tr><td rowspan="2" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle">판빙빙(윙) AI</td>
-            <td rowspan="2" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb">4만 / 400%</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">프리미엄</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">27,532</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">슬림</td>
-            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">24,220</td></tr>
-        <!-- 원텍(윙) -->
-        <tr><td rowspan="2" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle">원텍(윙)</td>
-            <td rowspan="2" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb">3만<br>목표 450%</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">헤어뱅</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">155,665</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">블랙</td>
-            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">277,200</td></tr>
-        <!-- 용융소금 -->
-        <tr><td rowspan="4" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;font-weight:700;vertical-align:middle">용융소금</td>
-            <td rowspan="4" style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;vertical-align:middle;background:#fffbeb">AI에 포함</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">1개</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">44,415</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">2개</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">83,179</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9;text-align:center">3개</td>
-            <td style="padding:8px 14px;border-bottom:1px solid #eef0f4;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">112,310</td></tr>
-        <tr><td style="padding:8px 14px;border-bottom:2px solid #dde1e9;border-right:1px solid #dde1e9;text-align:center">5개</td>
-            <td style="padding:8px 14px;border-bottom:2px solid #dde1e9;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a">167,055</td></tr>
-        <!-- 기타 -->
-        <tr><td style="padding:8px 14px;border-right:1px solid #dde1e9;font-weight:700">기타</td>
-            <td style="padding:8px 14px;border-right:1px solid #dde1e9;text-align:center;font-size:11px;color:#92400e;background:#fffbeb">AI에 포함<br>목표 400%</td>
-            <td style="padding:8px 14px;border-right:1px solid #dde1e9;text-align:center;color:#8896aa">-</td>
-            <td style="padding:8px 14px;text-align:right;color:#8896aa">-</td></tr>
+      <tbody id="margin-body">
       </tbody>
     </table>
   </div>
@@ -381,6 +303,11 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 
 <!-- 설정 탭 -->
 <div id="tab-settings" class="tab-panel">
+  <div class="section-label sl-violet" style="margin-bottom:14px">📦 제품 관리</div>
+  <div id="product-admin" style="margin-bottom:12px"></div>
+  <div style="margin-bottom:28px">
+    <button class="btn-add-lg" onclick="addProduct()">+ 상품 추가</button>
+  </div>
   <div class="section-label sl-amber">💰 제품별 광고비 세팅</div>
   <div class="card" style="padding:20px;margin-bottom:20px">
     <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">일별 입력 테이블에 참고 표시됩니다. 비워두면 기본값(이미지 기준)이 사용됩니다.</div>
@@ -420,8 +347,8 @@ const _supa = (window.supabase && _SUPA_URL !== '__SUPABASE_URL__')
   ? window.supabase.createClient(_SUPA_URL, _SUPA_KEY) : null;
 let _user = null;
 
-// ── Products ──────────────────────────────────────────────────
-const PRODUCTS = [
+// ── Products (defaults) ───────────────────────────────────────
+const _DEF_PRODUCTS = [
   { id: 'lolo',    name: '로로스윗',      defBudget: 30000, defRoas: 500 },
   { id: 'ginger',  name: '생강청',        defBudget: 0,     defRoas: 0   },
   { id: 'ginger0', name: '생강청 제로',   defBudget: 30000, defRoas: 500 },
@@ -432,60 +359,59 @@ const PRODUCTS = [
   { id: 'salt',    name: '용융소금',      defBudget: 0,     defRoas: 0   },
   { id: 'etc',     name: '기타',          defBudget: 0,     defRoas: 400 },
 ];
-
-const COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#64748b'];
-
-const PRODUCT_OPTIONS = {
+const _DEF_PRODUCT_OPTIONS = {
   lolo:    { adSetting: '3만 / 로하스 500%', options: [
-    { name: '20개(그로스)', margin: 4016 },
-    { name: '40개(윙)',     margin: 12707 },
-    { name: '60개(윙)',     margin: 16251 },
-    { name: '80개(윙)',     margin: 19946 },
+    { name: '20개(그로스)', margin: 4016 }, { name: '40개(윙)', margin: 12707 },
+    { name: '60개(윙)', margin: 16251 }, { name: '80개(윙)', margin: 19946 },
     { name: '100개(그로스)', margin: 15000 },
   ]},
   ginger:  { adSetting: '제로생강청 포함', options: [
-    { name: '1개(그로스)', margin: 3950 },
-    { name: '2개(윙)',     margin: 9211 },
-    { name: '2개(그로스)', margin: 9107 },
-    { name: '3개(그로스)', margin: 11801 },
-    { name: '4개(윙)',     margin: 16600 },
-    { name: '5개(윙)',     margin: 17598 },
+    { name: '1개(그로스)', margin: 3950 }, { name: '2개(윙)', margin: 9211 },
+    { name: '2개(그로스)', margin: 9107 }, { name: '3개(그로스)', margin: 11801 },
+    { name: '4개(윙)', margin: 16600 }, { name: '5개(윙)', margin: 17598 },
   ]},
   ginger0: { adSetting: '3만 / 로하스 500%', options: [
-    { name: '1개(윙)',     margin: 5534 },
-    { name: '1개(그로스)', margin: 5534 },
-    { name: '2개(윙)',     margin: 12295 },
-    { name: '2개(그로스)', margin: 12295 },
-    { name: '3개(윙)',     margin: 16811 },
-    { name: '3개(그로스)', margin: 16811 },
-    { name: '5개(윙)',     margin: 29913 },
-    { name: '5개(그로스)', margin: 29913 },
+    { name: '1개(윙)', margin: 5534 }, { name: '1개(그로스)', margin: 5534 },
+    { name: '2개(윙)', margin: 12295 }, { name: '2개(그로스)', margin: 12295 },
+    { name: '3개(윙)', margin: 16811 }, { name: '3개(그로스)', margin: 16811 },
+    { name: '5개(윙)', margin: 29913 }, { name: '5개(그로스)', margin: 29913 },
   ]},
   himup:   { adSetting: '6만(2/4) / 로하스 400%\n목표 500%', options: [
-    { name: '1개(그로스)', margin: 43091 },
-    { name: '2개(그로스)', margin: 72423 },
-    { name: '3개(그로스)', margin: 104822 },
-    { name: '4개(그로스)', margin: 139572 },
+    { name: '1개(그로스)', margin: 43091 }, { name: '2개(그로스)', margin: 72423 },
+    { name: '3개(그로스)', margin: 104822 }, { name: '4개(그로스)', margin: 139572 },
   ]},
-  z100:    { adSetting: '1.5만 / 500%', options: [
-    { name: '(그로스)', margin: 14988 },
-  ]},
+  z100:    { adSetting: '1.5만 / 500%', options: [{ name: '(그로스)', margin: 14988 }] },
   pabing:  { adSetting: '4만 / 400%', options: [
-    { name: '프리미엄', margin: 27532 },
-    { name: '슬림',     margin: 24220 },
+    { name: '프리미엄', margin: 27532 }, { name: '슬림', margin: 24220 },
   ]},
   wontek:  { adSetting: '3만 / 목표 450%', options: [
-    { name: '헤어뱅', margin: 155665 },
-    { name: '블랙',   margin: 277200 },
+    { name: '헤어뱅', margin: 155665 }, { name: '블랙', margin: 277200 },
   ]},
   salt:    { adSetting: 'AI에 포함', options: [
-    { name: '1개', margin: 44415 },
-    { name: '2개', margin: 83179 },
-    { name: '3개', margin: 112310 },
-    { name: '5개', margin: 167055 },
+    { name: '1개', margin: 44415 }, { name: '2개', margin: 83179 },
+    { name: '3개', margin: 112310 }, { name: '5개', margin: 167055 },
   ]},
   etc:     { adSetting: 'AI에 포함 / 목표 400%', options: [] },
 };
+
+let PRODUCTS = [];
+let PRODUCT_OPTIONS = {};
+
+function loadProductsConfig() {
+  const cfg = loadSettings('cp-products-config', null);
+  if (cfg && Array.isArray(cfg.products) && cfg.options) {
+    PRODUCTS = cfg.products;
+    PRODUCT_OPTIONS = cfg.options;
+  } else {
+    PRODUCTS = JSON.parse(JSON.stringify(_DEF_PRODUCTS));
+    PRODUCT_OPTIONS = JSON.parse(JSON.stringify(_DEF_PRODUCT_OPTIONS));
+  }
+}
+function saveProductsConfig() {
+  saveSettings('cp-products-config', { products: PRODUCTS, options: PRODUCT_OPTIONS });
+}
+
+const COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#64748b'];
 
 // ── State ─────────────────────────────────────────────────────
 let _weekOffset = 0;
@@ -1040,6 +966,7 @@ function renderMonthlyProductTable(days) {
 
 // ── Settings Tab ──────────────────────────────────────────────
 function loadSettingsTab() {
+  loadProductAdminSection();
   const targets = loadSettings('cp-targets', {});
   const budgets = loadSettings('cp-budgets', {});
   const trEl = document.getElementById('target-roas-list');
@@ -1080,34 +1007,134 @@ function saveSetting(settingKey, productId, val) {
 // ── Margin Table ──────────────────────────────────────────────
 function loadMarginTab() {
   const tbody = document.getElementById('margin-body');
+  if (!tbody) return;
+  const tdBase = 'padding:8px 14px;border-bottom:1px solid #eef0f4;border-right:1px solid #dde1e9';
+  const tdLast = 'padding:8px 14px;border-bottom:1px solid #eef0f4';
   let html = '';
-  PRODUCTS.forEach(p => {
-    const info = PRODUCT_OPTIONS[p.id];
-    if (!info) return;
+  PRODUCTS.forEach((p, pi) => {
+    const info = PRODUCT_OPTIONS[p.id] || { adSetting: '', options: [] };
     const opts = info.options;
-    const rows = Math.max(opts.length, 1);
-    const adSettingLines = info.adSetting.split('\n');
-    const adSettingHtml = adSettingLines.map(l=>`<span style="display:block">${l}</span>`).join('');
+    const N = Math.max(opts.length, 1);
+    const adHtml = info.adSetting.replace(/\n/g,'<br>');
+    const isLast = pi === PRODUCTS.length - 1;
+    const btm = isLast ? '2px solid #dde1e9' : '2px solid #dde1e9';
     if (opts.length === 0) {
       html += `<tr>
-        <td style="font-weight:700;font-family:'Noto Sans KR',sans-serif">${p.name}</td>
-        <td style="font-size:11px;color:#92400e;font-family:'Noto Sans KR',sans-serif">${adSettingHtml}</td>
-        <td>-</td><td>-</td>
+        <td style="${tdBase};font-weight:700;border-bottom:${btm}">${p.name}</td>
+        <td style="${tdBase};text-align:center;font-size:11px;color:#92400e;background:#fffbeb;border-bottom:${btm}">${adHtml}</td>
+        <td style="${tdBase};text-align:center;color:#8896aa;border-bottom:${btm}">-</td>
+        <td style="${tdLast};text-align:right;color:#8896aa;border-bottom:${btm}">-</td>
       </tr>`;
     } else {
       opts.forEach((opt, i) => {
+        const isLastOpt = i === opts.length - 1;
+        const ob = isLastOpt ? btm : '1px solid #eef0f4';
         html += `<tr>`;
         if (i === 0) {
-          html += `<td rowspan="${rows}" style="font-weight:700;font-family:'Noto Sans KR',sans-serif;vertical-align:middle;border-right:1px solid var(--border)">${p.name}</td>
-          <td rowspan="${rows}" style="font-size:11px;color:#92400e;font-family:'Noto Sans KR',sans-serif;vertical-align:middle;border-right:1px solid var(--border)">${adSettingHtml}</td>`;
+          html += `<td rowspan="${N}" style="${tdBase};font-weight:700;vertical-align:middle;border-bottom:${btm}">${p.name}</td>
+            <td rowspan="${N}" style="${tdBase};text-align:center;font-size:11px;color:#92400e;background:#fffbeb;vertical-align:middle;border-bottom:${btm}">${adHtml}</td>`;
         }
-        html += `<td style="font-family:'Noto Sans KR',sans-serif;font-size:12px">${opt.name}</td>
-        <td style="color:var(--success);font-weight:700">${opt.margin.toLocaleString('ko-KR')}</td>
+        html += `<td style="${tdBase};text-align:center;border-bottom:${ob}">${opt.name}</td>
+          <td style="${tdLast};text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#16a34a;border-bottom:${ob}">${opt.margin.toLocaleString('ko-KR')}</td>
         </tr>`;
       });
     }
   });
   tbody.innerHTML = html;
+}
+
+// ── Product Admin ─────────────────────────────────────────────
+function loadProductAdminSection() {
+  const el = document.getElementById('product-admin');
+  if (!el) return;
+  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  let html = '';
+  PRODUCTS.forEach((p) => {
+    const info = PRODUCT_OPTIONS[p.id] || { adSetting: '', options: [] };
+    html += `<div class="padmin-card">
+      <div class="padmin-head">
+        <input class="adm-input" style="width:130px;font-weight:600;font-size:13px" value="${esc(p.name)}" placeholder="상품명"
+          onchange="updateProdField('${p.id}','name',this.value)">
+        <input class="adm-input" style="flex:1;min-width:150px" value="${esc(info.adSetting)}" placeholder="광고비 세팅 (예: 3만 / 500%)"
+          onchange="updateAdSetting('${p.id}',this.value)">
+        <label style="font-size:11px;color:var(--text-muted);white-space:nowrap">기본광고비
+          <input class="adm-input" type="number" style="width:75px;margin-left:4px" value="${p.defBudget||''}" placeholder="0"
+            onchange="updateProdField('${p.id}','defBudget',this.value)">원
+        </label>
+        <label style="font-size:11px;color:var(--text-muted);white-space:nowrap">목표ROAS
+          <input class="adm-input" type="number" style="width:60px;margin-left:4px" value="${p.defRoas||''}" placeholder="0"
+            onchange="updateProdField('${p.id}','defRoas',this.value)">%
+        </label>
+        <button class="btn-del" onclick="deleteProduct('${p.id}')">상품 삭제</button>
+      </div>
+      <div class="padmin-body">
+        <div style="font-size:11px;color:var(--text-muted);font-weight:700;margin-bottom:6px">옵션 목록</div>`;
+    info.options.forEach((opt, oi) => {
+      html += `<div class="padmin-opt-row">
+        <input class="adm-input" style="flex:1;min-width:90px" value="${esc(opt.name)}" placeholder="옵션명"
+          onchange="updateOptionField('${p.id}',${oi},'name',this.value)">
+        <input class="adm-input" type="number" style="width:110px" value="${opt.margin}" placeholder="마진(원)"
+          onchange="updateOptionField('${p.id}',${oi},'margin',this.value)">
+        <span style="font-size:11px;color:var(--text-muted)">원</span>
+        <button class="btn-del" onclick="deleteOption('${p.id}',${oi})">×</button>
+      </div>`;
+    });
+    html += `    <button class="btn-add" style="margin-top:8px" onclick="addOption('${p.id}')">+ 옵션 추가</button>
+      </div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function updateProdField(pid, field, val) {
+  const p = PRODUCTS.find(p => p.id === pid);
+  if (!p) return;
+  if (field === 'name') p.name = val.trim() || p.name;
+  else if (field === 'defBudget') p.defBudget = +val || 0;
+  else if (field === 'defRoas') p.defRoas = +val || 0;
+  saveProductsConfig();
+}
+function updateAdSetting(pid, val) {
+  if (!PRODUCT_OPTIONS[pid]) PRODUCT_OPTIONS[pid] = { adSetting: '', options: [] };
+  PRODUCT_OPTIONS[pid].adSetting = val;
+  saveProductsConfig();
+}
+function updateOptionField(pid, oi, field, val) {
+  const opts = PRODUCT_OPTIONS[pid]?.options;
+  if (!opts || !opts[oi]) return;
+  if (field === 'name') opts[oi].name = val.trim();
+  else if (field === 'margin') opts[oi].margin = +val || 0;
+  saveProductsConfig();
+}
+function deleteOption(pid, oi) {
+  const opts = PRODUCT_OPTIONS[pid]?.options;
+  if (!opts) return;
+  opts.splice(oi, 1);
+  saveProductsConfig();
+  loadProductAdminSection();
+}
+function addOption(pid) {
+  if (!PRODUCT_OPTIONS[pid]) PRODUCT_OPTIONS[pid] = { adSetting: '', options: [] };
+  PRODUCT_OPTIONS[pid].options.push({ name: '새 옵션', margin: 0 });
+  saveProductsConfig();
+  loadProductAdminSection();
+}
+function deleteProduct(pid) {
+  const p = PRODUCTS.find(p => p.id === pid);
+  if (!confirm(`'${p?.name}' 상품을 삭제하시겠습니까?`)) return;
+  PRODUCTS = PRODUCTS.filter(p => p.id !== pid);
+  delete PRODUCT_OPTIONS[pid];
+  saveProductsConfig();
+  loadProductAdminSection();
+  loadSettingsTab();
+}
+function addProduct() {
+  const id = 'p' + Date.now();
+  PRODUCTS.push({ id, name: '새 상품', defBudget: 0, defRoas: 0 });
+  PRODUCT_OPTIONS[id] = { adSetting: '', options: [] };
+  saveProductsConfig();
+  loadProductAdminSection();
+  loadSettingsTab();
 }
 
 // ── Tab Switch ────────────────────────────────────────────────
@@ -1131,6 +1158,7 @@ function initHeader() {
 }
 
 async function init() {
+  loadProductsConfig();
   initHeader();
   if (_supa) {
     _supa.auth.onAuthStateChange(async (event, session) => {
@@ -1140,6 +1168,7 @@ async function init() {
         showAuth(false);
         logoutBtn.style.display = 'inline-block';
         await pullFromSupabase();
+        loadProductsConfig();
         loadDailyTab();
       } else {
         logoutBtn.style.display = 'none';
