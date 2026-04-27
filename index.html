@@ -681,9 +681,7 @@ function loadDailyTab() {
     const adRoasCls = adSpend > 0 ? roasClass(adRoas, tgt) : '';
     const hasOpts = opts.length > 0;
 
-    const nameCell = hasOpts
-      ? `<span style="cursor:pointer;display:flex;align-items:center;gap:6px" onclick="toggleOptions('${p.id}')"><span id="toggle-${p.id}" style="font-size:10px;color:var(--accent)">▶</span>${p.name}</span>`
-      : p.name;
+    const nameCell = p.name;
 
     rows += `<tr id="row-main-${p.id}">
       <td class="sticky-col">${nameCell}</td>
@@ -696,7 +694,7 @@ function loadDailyTab() {
     </tr>`;
 
     if (hasOpts) {
-      rows += `<tr id="row-opts-${p.id}" style="display:none"><td colspan="7" style="padding:0;background:var(--surface2)">
+      rows += `<tr id="row-opts-${p.id}"><td colspan="7" style="padding:0;background:var(--surface2)">
         <table style="width:100%;border-collapse:collapse">
           <tr style="background:var(--surface3)">
             <td style="padding:5px 14px 5px 36px;font-size:10px;color:var(--text-muted);font-weight:700">옵션</td>
