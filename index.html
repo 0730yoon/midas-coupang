@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>마이다스 쿠팡 광고 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&family=Jua&family=Montserrat:wght@400;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+:root {
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --surface2: #f8f9fb;
+  --surface3: #eef0f4;
+  --border: #dde1e9;
+  --border2: #bcc3d0;
+  --text-primary: #0d1117;
+  --text-secondary: #3d4a5c;
+  --text-muted: #8896aa;
+  --accent: #5b5ef4;
+  --accent-light: #ededff;
+  --accent-mid: #b9b8fc;
+  --success: #16a34a;
+  --success-light: #dcfce7;
+  --warning: #ea8c00;
+  --warning-light: #fff3d0;
+  --destructive: #dc2626;
+  --destructive-light: #fee2e2;
+  --gold: #BF9B30;
+  --radius-sm: 7px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow: 0 2px 8px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+
+/* Header */
+.app-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 1px 0 var(--border); }
+.header-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 58px; }
+.app-title { font-size: 14px; font-family: 'Jua','Noto Sans KR',sans-serif; display: flex; align-items: center; gap: 10px; }
+.midas-logo-inline { display: inline-flex; flex-direction: column; align-items: center; gap: 0; padding-right: 14px; border-right: 1.5px solid var(--border2); margin-right: 14px; }
+.midas-logo-inline .m-text { font-family: 'Montserrat',sans-serif; font-size: 16px; font-weight: 900; letter-spacing: 3px; color: var(--gold); line-height: 1.2; }
+.midas-logo-inline .m-line { display: block; width: 100%; height: 1px; background: var(--gold); margin: 3px 0 4px; }
+.midas-logo-inline .m-corp { font-family: 'Montserrat',sans-serif; font-size: 6.5px; font-weight: 400; letter-spacing: 3px; color: #1a1a1a; }
+.app-date { font-family: 'DM Mono',monospace; font-size: 11px; color: var(--text-secondary); background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px 10px; }
+#logout-btn { font-size: 11px; color: var(--text-muted); border: 1px solid var(--border); background: none; padding: 3px 10px; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Noto Sans KR',sans-serif; display: none; }
+
+/* Tabs */
+.tab-nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; position: sticky; top: 58px; z-index: 99; }
+.tab-nav-inner { max-width: 1100px; margin: 0 auto; display: flex; gap: 4px; padding: 10px 0; }
+.tab-btn { padding: 7px 16px; font-size: 13px; font-weight: 500; font-family: 'Noto Sans KR',sans-serif; border: 1px solid transparent; background: none; cursor: pointer; color: var(--text-muted); border-radius: var(--radius-md); transition: all .15s; }
+.tab-btn:hover { background: var(--surface2); color: var(--text-secondary); border-color: var(--border); }
+.tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; box-shadow: 0 2px 8px rgba(91,94,244,.35); }
+
+/* Layout */
+.main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 80px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+
+/* Date bar */
+.date-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.date-bar input[type=date] { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 12px; font-size: 13px; font-family: 'Noto Sans KR',sans-serif; background: var(--surface); color: var(--text-primary); cursor: pointer; }
+.date-btn { padding: 7px 14px; font-size: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface2); color: var(--text-secondary); cursor: pointer; font-family: 'Noto Sans KR',sans-serif; transition: all .15s; }
+.date-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.date-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* Input Table */
+.tbl-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+.input-table { width: 100%; border-collapse: collapse; background: var(--surface); min-width: 860px; }
+.input-table th { background: var(--surface2); font-size: 11px; font-weight: 700; color: var(--text-secondary); padding: 10px 10px; text-align: center; border-bottom: 2px solid var(--border); white-space: nowrap; letter-spacing: .03em; }
+.input-table th.sticky-col { text-align: left; position: sticky; left: 0; z-index: 2; background: var(--surface2); border-right: 1px solid var(--border); }
+.input-table td { padding: 6px 6px; border-bottom: 1px solid var(--surface3); vertical-align: middle; text-align: center; }
+.input-table td.sticky-col { position: sticky; left: 0; background: var(--surface); border-right: 1px solid var(--border); text-align: left; font-size: 13px; font-weight: 600; color: var(--text-primary); padding: 6px 12px; white-space: nowrap; z-index: 1; }
+.input-table tr:last-child td { border-bottom: none; }
+.input-table tr:hover td { background: var(--surface2); }
+.input-table tr:hover td.sticky-col { background: var(--surface2); }
+.input-table input { width: 90px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 5px 8px; font-size: 12px; font-family: 'DM Mono',monospace; text-align: right; background: var(--surface2); color: var(--text-primary); transition: border-color .15s, box-shadow .15s; }
+.input-table input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); background: var(--surface); }
+.input-table input::-webkit-inner-spin-button { display: none; }
+.calc-cell { font-family: 'DM Mono',monospace; font-size: 12px; font-weight: 600; padding: 0 8px; white-space: nowrap; }
+.roas-good { color: var(--success); }
+.roas-bad { color: var(--destructive); }
+.roas-mid { color: var(--warning); }
+.total-row td { background: var(--surface2) !important; font-weight: 700; border-top: 2px solid var(--border); }
+.total-row td.sticky-col { font-size: 12px; color: var(--text-secondary); }
+
+/* Summary cards */
+.sum-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.sum-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; box-shadow: var(--shadow-sm); }
+.sum-val { font-family: 'DM Mono',monospace; font-size: 20px; font-weight: 700; color: var(--text-primary); }
+.sum-lbl { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.sum-sub { font-size: 12px; font-weight: 600; margin-top: 2px; }
+
+/* Section label */
+.section-label { font-size: 15px; font-family: 'Jua','Noto Sans KR',sans-serif; font-weight: 400; color: var(--text-primary); margin-bottom: 12px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
+.sl-blue { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+.sl-green { background: #f0fdf4; border-color: #86efac; color: #166534; }
+.sl-amber { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+.sl-violet { background: #f3f0ff; border-color: #c4b5fd; color: #5b21b6; }
+.sl-rose { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
+.sl-emerald { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; }
+
+/* Week nav */
+.week-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+.week-nav button { padding: 7px 14px; font-size: 13px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); cursor: pointer; font-family: 'Noto Sans KR',sans-serif; }
+.week-nav button:hover { background: var(--surface2); }
+.week-label { font-family: 'DM Mono',monospace; font-size: 13px; font-weight: 600; color: var(--text-primary); min-width: 200px; text-align: center; }
+
+/* Chart card */
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+.chart-title { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 14px; }
+
+/* Weekly table */
+.week-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 700px; }
+.week-table th { background: var(--surface2); font-size: 11px; font-weight: 700; color: var(--text-secondary); padding: 8px 10px; text-align: center; border-bottom: 2px solid var(--border); white-space: nowrap; }
+.week-table th:first-child { text-align: left; position: sticky; left: 0; background: var(--surface2); border-right: 1px solid var(--border); }
+.week-table td { padding: 7px 10px; border-bottom: 1px solid var(--surface3); text-align: center; font-family: 'DM Mono',monospace; font-size: 12px; }
+.week-table td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); font-family: 'Noto Sans KR',sans-serif; font-weight: 600; font-size: 12px; border-right: 1px solid var(--border); }
+.week-table tr.total-row td { background: var(--surface2) !important; font-weight: 700; border-top: 2px solid var(--border2); }
+.week-table tr.total-row td:first-child { background: var(--surface2) !important; }
+
+/* Month nav */
+.month-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+.month-label { font-family: 'DM Mono',monospace; font-size: 14px; font-weight: 700; min-width: 120px; text-align: center; }
+
+/* Target ROAS badge */
+.target-input { width: 70px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px 6px; font-size: 11px; font-family: 'DM Mono',monospace; text-align: center; background: var(--surface2); }
+
+/* Save indicator */
+.save-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); display: inline-block; transition: background .3s; }
+.save-dot.saving { background: var(--warning); }
+.save-dot.saved { background: var(--success); }
+
+/* Auth */
+.auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(248,250,252,0.97); backdrop-filter: blur(4px); z-index: 99999; display: none; align-items: center; justify-content: center; }
+.auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 40px 32px; width: min(380px,92vw); box-shadow: var(--shadow-md); }
+.auth-logo-wrap { text-align: center; margin-bottom: 24px; }
+.auth-midas { display: inline-flex; flex-direction: column; align-items: center; }
+.auth-midas-text { font-family: 'Montserrat',sans-serif; font-size: 44px; font-weight: 900; letter-spacing: 5px; color: var(--gold); line-height: 1.1; }
+.auth-midas-line { width: 100%; height: 1px; background: var(--gold); margin: 8px 0 10px; }
+.auth-midas-corp { font-family: 'Montserrat',sans-serif; font-size: 11px; font-weight: 400; letter-spacing: 6px; color: #1a1a1a; }
+.auth-sub { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 24px; line-height: 1.6; }
+.auth-input { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; font-size: 14px; background: var(--surface2); color: var(--text-primary); font-family: 'Noto Sans KR',sans-serif; margin-bottom: 8px; transition: border-color .15s, box-shadow .15s; }
+.auth-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); background: var(--surface); }
+.auth-btn { width: 100%; padding: 11px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Noto Sans KR',sans-serif; margin-top: 6px; transition: opacity .15s; }
+.auth-btn:hover { opacity: .88; }
+.auth-err { font-size: 12px; color: var(--destructive); text-align: center; margin-top: 8px; min-height: 18px; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .sum-grid { grid-template-columns: repeat(2, 1fr); }
+  .header-inner { gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <span class="app-title">
+      <span class="midas-logo-inline">
+        <span class="m-text">MIDAS</span>
+        <span class="m-line"></span>
+        <span class="m-corp">CORPORATION</span>
+      </span>
+      📊 쿠팡 광고 분석
+    </span>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="save-dot" id="save-dot" title="저장 상태"></span>
+      <span class="app-date" id="header-date"></span>
+      <button id="logout-btn" onclick="signOut()">로그아웃</button>
+    </div>
+  </div>
+</header>
+
+<nav class="tab-nav">
+  <div class="tab-nav-inner">
+    <button class="tab-btn active" onclick="switchTab('daily')">📅 일별 입력</button>
+    <button class="tab-btn" onclick="switchTab('weekly')">📆 주간 현황</button>
+    <button class="tab-btn" onclick="switchTab('monthly')">📈 월간 분석</button>
+    <button class="tab-btn" onclick="switchTab('settings')">⚙️ 설정</button>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- 일별 입력 탭 -->
+<div id="tab-daily" class="tab-panel active">
+  <div class="date-bar">
+    <input type="date" id="daily-date" onchange="loadDailyTab()">
+    <button class="date-btn" onclick="setDailyDate(0)">오늘</button>
+    <button class="date-btn" onclick="setDailyDate(-1)">어제</button>
+    <button class="date-btn" onclick="setDailyDate(-2)">그저께</button>
+  </div>
+  <div id="daily-summary" class="sum-grid" style="margin-bottom:20px"></div>
+  <div class="tbl-wrap">
+    <table class="input-table" id="daily-table">
+      <thead>
+        <tr>
+          <th class="sticky-col">제품</th>
+          <th>클릭수</th>
+          <th>전환수</th>
+          <th>광고매출</th>
+          <th>광고비</th>
+          <th>총매출</th>
+          <th>ROAS</th>
+          <th>총ROAS</th>
+          <th>매출이익</th>
+        </tr>
+      </thead>
+      <tbody id="daily-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 주간 현황 탭 -->
+<div id="tab-weekly" class="tab-panel">
+  <div class="week-nav">
+    <button onclick="changeWeek(-1)">◀ 이전주</button>
+    <span class="week-label" id="week-label"></span>
+    <button onclick="changeWeek(1)">다음주 ▶</button>
+    <button class="date-btn" onclick="goThisWeek()" style="margin-left:8px">이번주</button>
+  </div>
+  <div id="weekly-summary" class="sum-grid" style="margin-bottom:20px"></div>
+  <div class="section-label sl-blue">📊 요일별 합계</div>
+  <div class="tbl-wrap" style="margin-bottom:20px">
+    <table class="week-table" id="weekly-table"></table>
+  </div>
+  <div class="section-label sl-green">🏪 제품별 합계</div>
+  <div class="tbl-wrap">
+    <table class="week-table" id="weekly-product-table"></table>
+  </div>
+</div>
+
+<!-- 월간 분석 탭 -->
+<div id="tab-monthly" class="tab-panel">
+  <div class="month-nav">
+    <button onclick="changeMonth(-1)">◀</button>
+    <span class="month-label" id="month-label"></span>
+    <button onclick="changeMonth(1)">▶</button>
+    <button class="date-btn" onclick="goThisMonth()" style="margin-left:8px">이번달</button>
+  </div>
+  <div id="monthly-summary" class="sum-grid" style="margin-bottom:20px"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px" id="monthly-charts">
+    <div class="chart-card"><div class="chart-title">📈 일별 매출이익 추이</div><canvas id="chart-profit" height="180"></canvas></div>
+    <div class="chart-card"><div class="chart-title">📊 일별 ROAS 추이</div><canvas id="chart-roas" height="180"></canvas></div>
+    <div class="chart-card"><div class="chart-title">🥧 제품별 광고매출 비중</div><canvas id="chart-pie" height="180"></canvas></div>
+    <div class="chart-card"><div class="chart-title">💸 광고비 vs 매출이익</div><canvas id="chart-bar" height="180"></canvas></div>
+  </div>
+  <div class="section-label sl-violet">📋 주차별 현황</div>
+  <div class="tbl-wrap" style="margin-bottom:20px">
+    <table class="week-table" id="monthly-week-table"></table>
+  </div>
+  <div class="section-label sl-emerald">🏪 제품별 월간 합계</div>
+  <div class="tbl-wrap">
+    <table class="week-table" id="monthly-product-table"></table>
+  </div>
+</div>
+
+<!-- 설정 탭 -->
+<div id="tab-settings" class="tab-panel">
+  <div class="section-label sl-amber">🎯 제품별 목표 ROAS 설정</div>
+  <div class="card" style="padding:20px;margin-bottom:20px">
+    <div id="target-roas-list"></div>
+  </div>
+  <div class="section-label sl-rose">🏷️ 제품별 단가 설정</div>
+  <div class="card" style="padding:20px">
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">단가 입력 시 전환수 × 단가로 광고매출 자동계산 옵션 활성화</div>
+    <div id="unit-price-list"></div>
+  </div>
+</div>
+
+</main>
+
+<!-- Auth overlay -->
+<div id="auth-overlay" class="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo-wrap">
+      <div class="auth-midas">
+        <span class="auth-midas-text">MIDAS</span>
+        <div class="auth-midas-line"></div>
+        <span class="auth-midas-corp">CORPORATION</span>
+      </div>
+    </div>
+    <div class="auth-sub">쿠팡 광고 분석 시스템<br><span style="font-size:12px">이메일과 비밀번호로 로그인하세요</span></div>
+    <input class="auth-input" type="email" id="auth-email" placeholder="이메일" autocomplete="email">
+    <input class="auth-input" type="password" id="auth-pw" placeholder="비밀번호" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()">
+    <button class="auth-btn" onclick="signIn()">로그인</button>
+    <div class="auth-err" id="auth-err"></div>
+  </div>
+</div>
+
+<script>
+// ── Supabase ──────────────────────────────────────────────────
+const _SUPA_URL = 'https://xcjvcyrcdrpjhchbzdqq.supabase.co';
+const _SUPA_KEY = 'sb_publishable_3_2J2g34FVO41PSgfjZzmw_sNcW4Gks';
+const _supa = (window.supabase && _SUPA_URL !== '__SUPABASE_URL__')
+  ? window.supabase.createClient(_SUPA_URL, _SUPA_KEY) : null;
+let _user = null;
+
+// ── Products ──────────────────────────────────────────────────
+const PRODUCTS = [
+  { id: 'lolo',    name: '로로스윗' },
+  { id: 'ginger',  name: '생강청' },
+  { id: 'ginger0', name: '생강청 제로' },
+  { id: 'himup',   name: '힘업' },
+  { id: 'z100',    name: '100Z' },
+  { id: 'pabing',  name: '판빙빙' },
+  { id: 'wontek',  name: '원텍' },
+  { id: 'salt',    name: '용융소금' },
+  { id: 'etc',     name: '기타' },
+];
+
+const METRICS = ['clicks','conversions','adRevenue','adSpend','totalRevenue'];
+const COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#64748b'];
+
+// ── State ─────────────────────────────────────────────────────
+let _weekOffset = 0;   // weeks from current week
+let _monthOffset = 0;  // months from current month
+let _charts = {};
+
+// ── Keys ──────────────────────────────────────────────────────
+function pad2(n) { return String(n).padStart(2,'0'); }
+function dayKey(d) { return `cp-${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+function todayKey() { return dayKey(new Date()); }
+function getDailyDateInput() { return document.getElementById('daily-date').value; }
+function getDailyDate() {
+  const v = getDailyDateInput();
+  if (!v) return new Date();
+  const [y,m,d] = v.split('-'); return new Date(+y,+m-1,+d);
+}
+function getDailyKey() { return dayKey(getDailyDate()); }
+
+function getWeekDates(offset=0) {
+  const now = new Date();
+  const day = now.getDay(), diff = day === 0 ? -6 : 1 - day;
+  const mon = new Date(now); mon.setDate(now.getDate() + diff + offset * 7);
+  return Array.from({length:7}, (_,i) => { const d = new Date(mon); d.setDate(mon.getDate()+i); return d; });
+}
+
+function getMonthDays(offset=0) {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth() + offset;
+  const first = new Date(y, m, 1), last = new Date(y, m+1, 0);
+  const days = [];
+  for (let d = new Date(first); d <= last; d.setDate(d.getDate()+1)) days.push(new Date(d));
+  return days;
+}
+
+// ── Storage ───────────────────────────────────────────────────
+function loadDay(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || {}; } catch { return {}; }
+}
+function saveDay(key, data) {
+  localStorage.setItem(key, JSON.stringify(data));
+  sbSet(key, data);
+}
+function loadSettings(k, def) {
+  try { return JSON.parse(localStorage.getItem(k)) || def; } catch { return def; }
+}
+function saveSettings(k, v) { localStorage.setItem(k, JSON.stringify(v)); sbSet(k, v); }
+
+// ── Supabase ──────────────────────────────────────────────────
+function setSaveDot(s) {
+  const d = document.getElementById('save-dot');
+  if (!d) return;
+  d.className = 'save-dot' + (s==='saving'?' saving':s==='saved'?' saved':'');
+}
+async function sbSet(key, val) {
+  if (!_supa || !_user) return;
+  setSaveDot('saving');
+  try {
+    await _supa.from('checklist_kv').upsert({user_id:_user.id, key, value:val, updated_at:new Date().toISOString()},{onConflict:'user_id,key'});
+    setSaveDot('saved');
+    setTimeout(()=>setSaveDot(''),2000);
+  } catch { setSaveDot(''); }
+}
+async function pullFromSupabase() {
+  if (!_supa || !_user) return;
+  try {
+    const {data} = await _supa.from('checklist_kv').select('key,value').eq('user_id', _user.id);
+    if (data) data.forEach(r => localStorage.setItem(r.key, JSON.stringify(r.value)));
+  } catch {}
+}
+
+// ── Auth ──────────────────────────────────────────────────────
+function showAuth(v) {
+  const o = document.getElementById('auth-overlay');
+  o.style.display = v ? 'flex' : 'none';
+}
+async function signIn() {
+  if (!_supa) { showAuth(false); return; }
+  const email = document.getElementById('auth-email').value.trim();
+  const pw = document.getElementById('auth-pw').value;
+  document.getElementById('auth-err').textContent = '';
+  const {error} = await _supa.auth.signInWithPassword({email, password:pw});
+  if (error) document.getElementById('auth-err').textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
+}
+function signOut() {
+  Object.keys(localStorage).forEach(k => { if(k.startsWith('sb-')||k.startsWith('cp-')) localStorage.removeItem(k); });
+  window.location.reload();
+}
+
+// ── Calculations ──────────────────────────────────────────────
+function calcRow(r) {
+  const roas = r.adSpend > 0 ? (r.adRevenue / r.adSpend * 100) : 0;
+  const totalRoas = r.adSpend > 0 ? (r.totalRevenue / r.adSpend * 100) : 0;
+  const profit = r.totalRevenue - r.adSpend;
+  return { ...r, roas, totalRoas, profit };
+}
+function roasClass(roas, target) {
+  if (!target || target === 0) return '';
+  if (roas >= target) return 'roas-good';
+  if (roas >= target * 0.7) return 'roas-mid';
+  return 'roas-bad';
+}
+function fmtNum(n, dec=0) {
+  if (!n || isNaN(n)) return '-';
+  return n.toLocaleString('ko-KR', {maximumFractionDigits:dec});
+}
+function fmtRoas(n) {
+  if (!n || isNaN(n) || n === 0) return '-';
+  return Math.round(n) + '%';
+}
+
+function sumDayData(days) {
+  const tot = { clicks:0, conversions:0, adRevenue:0, adSpend:0, totalRevenue:0 };
+  days.forEach(d => {
+    const data = loadDay(dayKey(d));
+    PRODUCTS.forEach(p => {
+      const r = data[p.id] || {};
+      tot.clicks += +r.clicks||0;
+      tot.conversions += +r.conversions||0;
+      tot.adRevenue += +r.adRevenue||0;
+      tot.adSpend += +r.adSpend||0;
+      tot.totalRevenue += +r.totalRevenue||0;
+    });
+  });
+  return calcRow(tot);
+}
+function sumDayDataByProduct(days) {
+  const res = {};
+  PRODUCTS.forEach(p => {
+    res[p.id] = { clicks:0, conversions:0, adRevenue:0, adSpend:0, totalRevenue:0 };
+    days.forEach(d => {
+      const data = loadDay(dayKey(d));
+      const r = data[p.id] || {};
+      res[p.id].clicks += +r.clicks||0;
+      res[p.id].conversions += +r.conversions||0;
+      res[p.id].adRevenue += +r.adRevenue||0;
+      res[p.id].adSpend += +r.adSpend||0;
+      res[p.id].totalRevenue += +r.totalRevenue||0;
+    });
+    res[p.id] = calcRow(res[p.id]);
+  });
+  return res;
+}
+
+// ── Summary Cards ─────────────────────────────────────────────
+function renderSummary(elId, days) {
+  const t = sumDayData(days);
+  const el = document.getElementById(elId);
+  const roasCls = t.roas >= 300 ? 'roas-good' : t.roas >= 150 ? 'roas-mid' : 'roas-bad';
+  el.innerHTML = `
+    <div class="sum-card"><div class="sum-val">${fmtNum(t.adRevenue)}</div><div class="sum-lbl">광고매출 (원)</div></div>
+    <div class="sum-card"><div class="sum-val">${fmtNum(t.adSpend)}</div><div class="sum-lbl">광고비 (원)</div></div>
+    <div class="sum-card"><div class="sum-val ${roasCls}">${fmtRoas(t.roas)}</div><div class="sum-lbl">ROAS</div></div>
+    <div class="sum-card"><div class="sum-val">${fmtNum(t.totalRevenue)}</div><div class="sum-lbl">총매출 (원)</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:${t.profit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.profit)}</div><div class="sum-lbl">매출이익 (원)</div></div>
+    <div class="sum-card"><div class="sum-val">${fmtNum(t.conversions)}</div><div class="sum-lbl">전환수</div></div>
+  `;
+}
+
+// ── Daily Tab ─────────────────────────────────────────────────
+function initDailyDate() {
+  const el = document.getElementById('daily-date');
+  if (!el.value) { const d = new Date(); el.value = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+}
+function setDailyDate(offset) {
+  const d = new Date(); d.setDate(d.getDate() + offset);
+  document.getElementById('daily-date').value = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+  loadDailyTab();
+}
+
+function loadDailyTab() {
+  initDailyDate();
+  const key = getDailyKey();
+  const data = loadDay(key);
+  const targets = loadSettings('cp-targets', {});
+  const tbody = document.getElementById('daily-body');
+  const days = [getDailyDate()];
+  renderSummary('daily-summary', days);
+
+  let rows = '';
+  PRODUCTS.forEach(p => {
+    const r = data[p.id] || {};
+    const c = calcRow({ clicks:+r.clicks||0, conversions:+r.conversions||0, adRevenue:+r.adRevenue||0, adSpend:+r.adSpend||0, totalRevenue:+r.totalRevenue||0 });
+    const tgt = targets[p.id] || 0;
+    const cls = c.adSpend > 0 ? roasClass(c.roas, tgt) : '';
+    const tCls = c.adSpend > 0 ? roasClass(c.totalRoas, tgt) : '';
+    rows += `<tr>
+      <td class="sticky-col">${p.name}</td>
+      <td><input type="number" min="0" value="${r.clicks||''}" placeholder="0" onchange="saveCell('${key}','${p.id}','clicks',this.value)" oninput="updateCalc(this,'${p.id}')"></td>
+      <td><input type="number" min="0" value="${r.conversions||''}" placeholder="0" onchange="saveCell('${key}','${p.id}','conversions',this.value)" oninput="updateCalc(this,'${p.id}')"></td>
+      <td><input type="number" min="0" value="${r.adRevenue||''}" placeholder="0" id="ar-${p.id}" onchange="saveCell('${key}','${p.id}','adRevenue',this.value)" oninput="updateCalc(this,'${p.id}')"></td>
+      <td><input type="number" min="0" value="${r.adSpend||''}" placeholder="0" onchange="saveCell('${key}','${p.id}','adSpend',this.value)" oninput="updateCalc(this,'${p.id}')"></td>
+      <td><input type="number" min="0" value="${r.totalRevenue||''}" placeholder="0" onchange="saveCell('${key}','${p.id}','totalRevenue',this.value)" oninput="updateCalc(this,'${p.id}')"></td>
+      <td class="calc-cell ${cls}" id="roas-${p.id}">${c.adSpend>0?fmtRoas(c.roas):'-'}</td>
+      <td class="calc-cell ${tCls}" id="troas-${p.id}">${c.adSpend>0?fmtRoas(c.totalRoas):'-'}</td>
+      <td class="calc-cell" id="profit-${p.id}" style="color:${c.profit>0?'var(--success)':c.profit<0?'var(--destructive)':'var(--text-muted)'}">${c.adSpend>0||c.totalRevenue>0?fmtNum(c.profit):'-'}</td>
+    </tr>`;
+  });
+
+  // Total row
+  const t = sumDayData([getDailyDate()]);
+  const tgt0 = 0;
+  rows += `<tr class="total-row">
+    <td class="sticky-col">합계</td>
+    <td class="calc-cell">${fmtNum(t.clicks)}</td>
+    <td class="calc-cell">${fmtNum(t.conversions)}</td>
+    <td class="calc-cell">${fmtNum(t.adRevenue)}</td>
+    <td class="calc-cell">${fmtNum(t.adSpend)}</td>
+    <td class="calc-cell">${fmtNum(t.totalRevenue)}</td>
+    <td class="calc-cell ${roasClass(t.roas,0)}" id="roas-total">${fmtRoas(t.roas)}</td>
+    <td class="calc-cell" id="troas-total">${fmtRoas(t.totalRoas)}</td>
+    <td class="calc-cell" style="color:${t.profit>=0?'var(--success)':'var(--destructive)'}" id="profit-total">${fmtNum(t.profit)}</td>
+  </tr>`;
+
+  tbody.innerHTML = rows;
+}
+
+let _saveTimers = {};
+function saveCell(key, pid, field, val) {
+  const data = loadDay(key);
+  if (!data[pid]) data[pid] = {};
+  data[pid][field] = +val || 0;
+  saveDay(key, data);
+  loadDailyTab();
+}
+
+function updateCalc(input, pid) {
+  // Debounced save + recalc
+  clearTimeout(_saveTimers[pid]);
+  _saveTimers[pid] = setTimeout(() => {
+    const key = getDailyKey();
+    const data = loadDay(key);
+    if (!data[pid]) data[pid] = {};
+    // read all inputs for this product
+    const row = input.closest('tr');
+    const inputs = row.querySelectorAll('input');
+    const fields = ['clicks','conversions','adRevenue','adSpend','totalRevenue'];
+    fields.forEach((f,i) => { data[pid][f] = +inputs[i].value || 0; });
+
+    // auto-fill adRevenue from unit price × conversions if adRevenue is 0
+    const prices = loadSettings('cp-prices', {});
+    if (!data[pid].adRevenue && prices[pid] && data[pid].conversions) {
+      data[pid].adRevenue = prices[pid] * data[pid].conversions;
+      const arInput = document.getElementById('ar-'+pid);
+      if (arInput) arInput.value = data[pid].adRevenue;
+    }
+
+    saveDay(key, data);
+    const c = calcRow(data[pid]);
+    const targets = loadSettings('cp-targets', {});
+    const tgt = targets[pid] || 0;
+    const roasEl = document.getElementById('roas-'+pid);
+    const troasEl = document.getElementById('troas-'+pid);
+    const profitEl = document.getElementById('profit-'+pid);
+    if (roasEl) { roasEl.textContent = c.adSpend>0?fmtRoas(c.roas):'-'; roasEl.className='calc-cell '+(c.adSpend>0?roasClass(c.roas,tgt):''); }
+    if (troasEl) { troasEl.textContent = c.adSpend>0?fmtRoas(c.totalRoas):'-'; }
+    if (profitEl) { profitEl.textContent = (c.adSpend>0||c.totalRevenue>0)?fmtNum(c.profit):'-'; profitEl.style.color = c.profit>0?'var(--success)':c.profit<0?'var(--destructive)':'var(--text-muted)'; }
+    renderSummary('daily-summary', [getDailyDate()]);
+  }, 400);
+}
+
+// ── Weekly Tab ────────────────────────────────────────────────
+const DAYS_KO = ['월','화','수','목','금','토','일'];
+
+function goThisWeek() { _weekOffset = 0; loadWeeklyTab(); }
+function changeWeek(d) { _weekOffset += d; loadWeeklyTab(); }
+
+function loadWeeklyTab() {
+  const days = getWeekDates(_weekOffset);
+  const mon = days[0], sun = days[6];
+  const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
+  document.getElementById('week-label').textContent = `${mon.getFullYear()}년 ${fmt(mon)} ~ ${fmt(sun)}`;
+  renderSummary('weekly-summary', days);
+  renderWeeklyDayTable(days);
+  renderWeeklyProductTable(days);
+}
+
+function renderWeeklyDayTable(days) {
+  const el = document.getElementById('weekly-table');
+  const cols = ['광고매출','광고비','ROAS','총매출','매출이익'];
+  let html = `<thead><tr><th>요일</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+  let totals = {adRevenue:0,adSpend:0,totalRevenue:0,conversions:0};
+  days.forEach((d,i) => {
+    const t = sumDayData([d]);
+    totals.adRevenue += t.adRevenue; totals.adSpend += t.adSpend;
+    totals.totalRevenue += t.totalRevenue; totals.conversions += t.conversions;
+    const hasData = t.adSpend > 0 || t.adRevenue > 0 || t.totalRevenue > 0;
+    html += `<tr>
+      <td>${DAYS_KO[i]} (${(d.getMonth()+1)}/${d.getDate()})</td>
+      <td>${hasData?fmtNum(t.adRevenue):'-'}</td>
+      <td>${hasData?fmtNum(t.adSpend):'-'}</td>
+      <td class="${hasData&&t.adSpend>0?roasClass(t.roas,0):''}">${hasData&&t.adSpend>0?fmtRoas(t.roas):'-'}</td>
+      <td>${hasData?fmtNum(t.totalRevenue):'-'}</td>
+      <td style="color:${t.profit>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(t.profit):'-'}</td>
+    </tr>`;
+  });
+  const wt = calcRow(totals);
+  html += `<tr class="total-row"><td>주간 합계</td><td>${fmtNum(wt.adRevenue)}</td><td>${fmtNum(wt.adSpend)}</td>
+    <td class="${roasClass(wt.roas,0)}">${fmtRoas(wt.roas)}</td><td>${fmtNum(wt.totalRevenue)}</td>
+    <td style="color:${wt.profit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(wt.profit)}</td></tr>`;
+  el.innerHTML = html + '</tbody>';
+}
+
+function renderWeeklyProductTable(days) {
+  const el = document.getElementById('weekly-product-table');
+  const byProd = sumDayDataByProduct(days);
+  const targets = loadSettings('cp-targets', {});
+  const cols = ['광고매출','광고비','ROAS','총매출','매출이익','전환수'];
+  let html = `<thead><tr><th>제품</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+  let tot = {adRevenue:0,adSpend:0,totalRevenue:0,conversions:0};
+  PRODUCTS.forEach(p => {
+    const r = byProd[p.id];
+    const hasData = r.adSpend>0||r.adRevenue>0||r.totalRevenue>0;
+    tot.adRevenue+=r.adRevenue; tot.adSpend+=r.adSpend; tot.totalRevenue+=r.totalRevenue; tot.conversions+=r.conversions;
+    const tgt = targets[p.id]||0;
+    html += `<tr>
+      <td>${p.name}</td>
+      <td>${hasData?fmtNum(r.adRevenue):'-'}</td>
+      <td>${hasData?fmtNum(r.adSpend):'-'}</td>
+      <td class="${hasData&&r.adSpend>0?roasClass(r.roas,tgt):''}">${hasData&&r.adSpend>0?fmtRoas(r.roas):'-'}</td>
+      <td>${hasData?fmtNum(r.totalRevenue):'-'}</td>
+      <td style="color:${r.profit>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(r.profit):'-'}</td>
+      <td>${hasData?fmtNum(r.conversions):'-'}</td>
+    </tr>`;
+  });
+  const wt = calcRow(tot);
+  html += `<tr class="total-row"><td>합계</td><td>${fmtNum(wt.adRevenue)}</td><td>${fmtNum(wt.adSpend)}</td>
+    <td>${fmtRoas(wt.roas)}</td><td>${fmtNum(wt.totalRevenue)}</td>
+    <td style="color:${wt.profit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(wt.profit)}</td><td>${fmtNum(wt.conversions)}</td></tr>`;
+  el.innerHTML = html + '</tbody>';
+}
+
+// ── Monthly Tab ───────────────────────────────────────────────
+function goThisMonth() { _monthOffset = 0; loadMonthlyTab(); }
+function changeMonth(d) { _monthOffset += d; loadMonthlyTab(); }
+
+function loadMonthlyTab() {
+  const days = getMonthDays(_monthOffset);
+  const now = new Date(), y = now.getFullYear(), m = now.getMonth() + _monthOffset;
+  const date = new Date(y, m, 1);
+  document.getElementById('month-label').textContent = `${date.getFullYear()}년 ${date.getMonth()+1}월`;
+  renderSummary('monthly-summary', days);
+  renderMonthlyCharts(days);
+  renderMonthlyWeekTable(days, date);
+  renderMonthlyProductTable(days);
+}
+
+function renderMonthlyCharts(days) {
+  // daily profit + roas
+  const labels = [], profits = [], roasArr = [];
+  days.forEach(d => {
+    const t = sumDayData([d]);
+    if (t.adSpend > 0 || t.totalRevenue > 0) {
+      labels.push(`${d.getMonth()+1}/${d.getDate()}`);
+      profits.push(t.profit);
+      roasArr.push(Math.round(t.roas));
+    }
+  });
+
+  destroyChart('chart-profit');
+  _charts['chart-profit'] = new Chart(document.getElementById('chart-profit'), {
+    type:'line', data:{ labels, datasets:[{ label:'매출이익', data:profits, borderColor:'#16a34a', backgroundColor:'rgba(22,163,74,.1)', tension:.4, fill:true, pointRadius:3 }] },
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false},ticks:{font:{size:10}}}, y:{ticks:{callback:v=>fmtNum(v),font:{size:10}}} } }
+  });
+
+  destroyChart('chart-roas');
+  _charts['chart-roas'] = new Chart(document.getElementById('chart-roas'), {
+    type:'line', data:{ labels, datasets:[{ label:'ROAS', data:roasArr, borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,.1)', tension:.4, fill:true, pointRadius:3 }] },
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false},ticks:{font:{size:10}}}, y:{ticks:{callback:v=>v+'%',font:{size:10}}} } }
+  });
+
+  // pie by product
+  const byProd = sumDayDataByProduct(days);
+  const pieLabels = PRODUCTS.map(p=>p.name);
+  const pieData = PRODUCTS.map(p=>byProd[p.id].adRevenue);
+  destroyChart('chart-pie');
+  _charts['chart-pie'] = new Chart(document.getElementById('chart-pie'), {
+    type:'pie', data:{ labels:pieLabels, datasets:[{ data:pieData, backgroundColor:COLORS }] },
+    options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{font:{size:11},boxWidth:12} } } }
+  });
+
+  // bar: adSpend vs profit
+  const barLabels = PRODUCTS.map(p=>p.name);
+  const spends = PRODUCTS.map(p=>byProd[p.id].adSpend);
+  const profs = PRODUCTS.map(p=>byProd[p.id].profit);
+  destroyChart('chart-bar');
+  _charts['chart-bar'] = new Chart(document.getElementById('chart-bar'), {
+    type:'bar', data:{ labels:barLabels, datasets:[
+      { label:'광고비', data:spends, backgroundColor:'rgba(239,68,68,.7)' },
+      { label:'매출이익', data:profs, backgroundColor:'rgba(22,163,74,.7)' }
+    ] },
+    options:{ responsive:true, plugins:{legend:{labels:{font:{size:11},boxWidth:12}}}, scales:{ x:{grid:{display:false},ticks:{font:{size:10}}}, y:{ticks:{callback:v=>fmtNum(v),font:{size:10}}} } }
+  });
+}
+
+function destroyChart(id) { if (_charts[id]) { _charts[id].destroy(); delete _charts[id]; } }
+
+function renderMonthlyWeekTable(days, monthDate) {
+  const el = document.getElementById('monthly-week-table');
+  // Group by week
+  const weeks = [];
+  let cur = [];
+  days.forEach(d => {
+    cur.push(d);
+    if (d.getDay() === 0) { weeks.push(cur); cur = []; }
+  });
+  if (cur.length) weeks.push(cur);
+
+  const cols = ['광고매출','광고비','ROAS','총매출','매출이익'];
+  let html = `<thead><tr><th>주차</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+  let tot = {adRevenue:0,adSpend:0,totalRevenue:0};
+  weeks.forEach((wk,i) => {
+    const t = sumDayData(wk);
+    tot.adRevenue+=t.adRevenue; tot.adSpend+=t.adSpend; tot.totalRevenue+=t.totalRevenue;
+    const fmt = d=>`${d.getMonth()+1}/${d.getDate()}`;
+    html += `<tr>
+      <td>${i+1}주차 (${fmt(wk[0])}~${fmt(wk[wk.length-1])})</td>
+      <td>${fmtNum(t.adRevenue)}</td><td>${fmtNum(t.adSpend)}</td>
+      <td class="${roasClass(t.roas,0)}">${fmtRoas(t.roas)}</td>
+      <td>${fmtNum(t.totalRevenue)}</td>
+      <td style="color:${t.profit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.profit)}</td>
+    </tr>`;
+  });
+  const mt = calcRow(tot);
+  html += `<tr class="total-row"><td>월간 합계</td><td>${fmtNum(mt.adRevenue)}</td><td>${fmtNum(mt.adSpend)}</td>
+    <td>${fmtRoas(mt.roas)}</td><td>${fmtNum(mt.totalRevenue)}</td>
+    <td style="color:${mt.profit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(mt.profit)}</td></tr>`;
+  el.innerHTML = html + '</tbody>';
+}
+
+function renderMonthlyProductTable(days) {
+  const el = document.getElementById('monthly-product-table');
+  const byProd = sumDayDataByProduct(days);
+  const targets = loadSettings('cp-targets', {});
+  const cols = ['광고매출','광고비','ROAS','총매출','매출이익','전환수'];
+  let html = `<thead><tr><th>제품</th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+  let tot = {adRevenue:0,adSpend:0,totalRevenue:0,conversions:0};
+  PRODUCTS.forEach(p => {
+    const r = byProd[p.id];
+    const hasData = r.adSpend>0||r.adRevenue>0||r.totalRevenue>0;
+    tot.adRevenue+=r.adRevenue; tot.adSpend+=r.adSpend; tot.totalRevenue+=r.totalRevenue; tot.conversions+=r.conversions;
+    const tgt = targets[p.id]||0;
+    html += `<tr>
+      <td>${p.name}</td>
+      <td>${hasData?fmtNum(r.adRevenue):'-'}</td>
+      <td>${hasData?fmtNum(r.adSpend):'-'}</td>
+      <td class="${hasData&&r.adSpend>0?roasClass(r.roas,tgt):''}">${hasData&&r.adSpend>0?fmtRoas(r.roas):'-'}</td>
+      <td>${hasData?fmtNum(r.totalRevenue):'-'}</td>
+      <td style="color:${r.profit>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(r.profit):'-'}</td>
+      <td>${hasData?fmtNum(r.conversions):'-'}</td>
+    </tr>`;
+  });
+  const mt = calcRow(tot);
+  html += `<tr class="total-row"><td>합계</td><td>${fmtNum(mt.adRevenue)}</td><td>${fmtNum(mt.adSpend)}</td>
+    <td>${fmtRoas(mt.roas)}</td><td>${fmtNum(mt.totalRevenue)}</td>
+    <td style="color:${mt.profit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(mt.profit)}</td><td>${fmtNum(mt.conversions)}</td></tr>`;
+  el.innerHTML = html + '</tbody>';
+}
+
+// ── Settings Tab ──────────────────────────────────────────────
+function loadSettingsTab() {
+  const targets = loadSettings('cp-targets', {});
+  const prices = loadSettings('cp-prices', {});
+  const trEl = document.getElementById('target-roas-list');
+  const prEl = document.getElementById('unit-price-list');
+  let trHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">`;
+  let prHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">`;
+  PRODUCTS.forEach(p => {
+    trHtml += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md)">
+      <span style="font-size:13px;font-weight:600">${p.name}</span>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input class="target-input" type="number" value="${targets[p.id]||''}" placeholder="300" onchange="saveSetting('cp-targets','${p.id}',this.value)">
+        <span style="font-size:11px;color:var(--text-muted)">%</span>
+      </div>
+    </div>`;
+    prHtml += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md)">
+      <span style="font-size:13px;font-weight:600">${p.name}</span>
+      <div style="display:flex;align-items:center;gap:4px">
+        <input class="target-input" style="width:90px" type="number" value="${prices[p.id]||''}" placeholder="단가" onchange="saveSetting('cp-prices','${p.id}',this.value)">
+        <span style="font-size:11px;color:var(--text-muted)">원</span>
+      </div>
+    </div>`;
+  });
+  trEl.innerHTML = trHtml + '</div>';
+  prEl.innerHTML = prHtml + '</div>';
+}
+
+function saveSetting(settingKey, productId, val) {
+  const s = loadSettings(settingKey, {});
+  s[productId] = +val || 0;
+  saveSettings(settingKey, s);
+}
+
+// ── Tab Switch ────────────────────────────────────────────────
+function switchTab(t) {
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.toggle('active', el.getAttribute('onclick') === `switchTab('${t}')`));
+  document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  if (t === 'daily') loadDailyTab();
+  if (t === 'weekly') loadWeeklyTab();
+  if (t === 'monthly') loadMonthlyTab();
+  if (t === 'settings') loadSettingsTab();
+}
+
+// ── Init ──────────────────────────────────────────────────────
+function initHeader() {
+  const now = new Date();
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('header-date').textContent =
+    `${now.getFullYear()}.${pad2(now.getMonth()+1)}.${pad2(now.getDate())} (${days[now.getDay()]})`;
+}
+
+async function init() {
+  initHeader();
+  if (_supa) {
+    _supa.auth.onAuthStateChange(async (event, session) => {
+      _user = session?.user || null;
+      const logoutBtn = document.getElementById('logout-btn');
+      if (_user) {
+        showAuth(false);
+        logoutBtn.style.display = 'inline-block';
+        await pullFromSupabase();
+        loadDailyTab();
+      } else {
+        logoutBtn.style.display = 'none';
+        showAuth(true);
+      }
+    });
+  } else {
+    showAuth(false);
+    loadDailyTab();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
