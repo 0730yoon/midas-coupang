@@ -48,7 +48,6 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 .midas-logo-inline .m-line { display: block; width: 100%; height: 1px; background: var(--gold); margin: 3px 0 4px; }
 .midas-logo-inline .m-corp { font-family: 'Montserrat',sans-serif; font-size: 6.5px; font-weight: 400; letter-spacing: 3px; color: #1a1a1a; }
 .app-date { font-family: 'DM Mono',monospace; font-size: 11px; color: var(--text-secondary); background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px 10px; }
-#logout-btn { font-size: 11px; color: var(--text-muted); border: 1px solid var(--border); background: none; padding: 3px 10px; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Noto Sans KR',sans-serif; display: none; }
 
 /* Tabs */
 .tab-nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; position: sticky; top: 58px; z-index: 99; }
@@ -139,20 +138,6 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 .save-dot.saving { background: var(--warning); }
 .save-dot.saved { background: var(--success); }
 
-/* Auth */
-.auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(248,250,252,0.97); backdrop-filter: blur(4px); z-index: 99999; display: none; align-items: center; justify-content: center; }
-.auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 40px 32px; width: min(380px,92vw); box-shadow: var(--shadow-md); }
-.auth-logo-wrap { text-align: center; margin-bottom: 24px; }
-.auth-midas { display: inline-flex; flex-direction: column; align-items: center; }
-.auth-midas-text { font-family: 'Montserrat',sans-serif; font-size: 44px; font-weight: 900; letter-spacing: 5px; color: var(--gold); line-height: 1.1; }
-.auth-midas-line { width: 100%; height: 1px; background: var(--gold); margin: 8px 0 10px; }
-.auth-midas-corp { font-family: 'Montserrat',sans-serif; font-size: 11px; font-weight: 400; letter-spacing: 6px; color: #1a1a1a; }
-.auth-sub { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 24px; line-height: 1.6; }
-.auth-input { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; font-size: 14px; background: var(--surface2); color: var(--text-primary); font-family: 'Noto Sans KR',sans-serif; margin-bottom: 8px; transition: border-color .15s, box-shadow .15s; }
-.auth-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); background: var(--surface); }
-.auth-btn { width: 100%; padding: 11px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Noto Sans KR',sans-serif; margin-top: 6px; transition: opacity .15s; }
-.auth-btn:hover { opacity: .88; }
-.auth-err { font-size: 12px; color: var(--destructive); text-align: center; margin-top: 8px; min-height: 18px; }
 
 /* Responsive */
 @media (max-width: 600px) {
@@ -203,7 +188,6 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
     <div style="display:flex;align-items:center;gap:10px">
       <span class="save-dot" id="save-dot" title="저장 상태"></span>
       <span class="app-date" id="header-date"></span>
-      <button id="logout-btn" onclick="signOut()">로그아웃</button>
     </div>
   </div>
 </header>
@@ -351,23 +335,6 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 
 </main>
 
-<!-- Auth overlay -->
-<div id="auth-overlay" class="auth-overlay">
-  <div class="auth-box">
-    <div class="auth-logo-wrap">
-      <div class="auth-midas">
-        <span class="auth-midas-text">MIDAS</span>
-        <div class="auth-midas-line"></div>
-        <span class="auth-midas-corp">CORPORATION</span>
-      </div>
-    </div>
-    <div class="auth-sub">쿠팡 광고 분석 시스템<br><span style="font-size:12px">이메일과 비밀번호로 로그인하세요</span></div>
-    <input class="auth-input" type="email" id="auth-email" placeholder="이메일" autocomplete="email">
-    <input class="auth-input" type="password" id="auth-pw" placeholder="비밀번호" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()">
-    <button class="auth-btn" onclick="signIn()">로그인</button>
-    <div class="auth-err" id="auth-err"></div>
-  </div>
-</div>
 
 <script>
 // ── Supabase ──────────────────────────────────────────────────
@@ -512,23 +479,6 @@ async function pullFromSupabase() {
   } catch {}
 }
 
-// ── Auth ──────────────────────────────────────────────────────
-function showAuth(v) {
-  const o = document.getElementById('auth-overlay');
-  o.style.display = v ? 'flex' : 'none';
-}
-async function signIn() {
-  if (!_supa) { showAuth(false); return; }
-  const email = document.getElementById('auth-email').value.trim();
-  const pw = document.getElementById('auth-pw').value;
-  document.getElementById('auth-err').textContent = '';
-  const {error} = await _supa.auth.signInWithPassword({email, password:pw});
-  if (error) document.getElementById('auth-err').textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
-}
-function signOut() {
-  Object.keys(localStorage).forEach(k => { if(k.startsWith('sb-')||k.startsWith('cp-')) localStorage.removeItem(k); });
-  window.location.reload();
-}
 
 // ── Calculations ──────────────────────────────────────────────
 function getProductMargin(r, pid) {
@@ -1270,28 +1220,10 @@ function initHeader() {
     `${now.getFullYear()}.${pad2(now.getMonth()+1)}.${pad2(now.getDate())} (${days[now.getDay()]})`;
 }
 
-async function init() {
+function init() {
   loadProductsConfig();
   initHeader();
-  if (_supa) {
-    _supa.auth.onAuthStateChange(async (event, session) => {
-      _user = session?.user || null;
-      const logoutBtn = document.getElementById('logout-btn');
-      if (_user) {
-        showAuth(false);
-        logoutBtn.style.display = 'inline-block';
-        await pullFromSupabase();
-        loadProductsConfig();
-        loadDailyTab();
-      } else {
-        logoutBtn.style.display = 'none';
-        showAuth(true);
-      }
-    });
-  } else {
-    showAuth(false);
-    loadDailyTab();
-  }
+  loadDailyTab();
 }
 
 init();
