@@ -569,10 +569,9 @@ function signInGuest() {
   loadDailyTab();
 }
 function signOut() {
-  _role = null;
   sessionStorage.removeItem('cp-role');
   if (_supa) _supa.auth.signOut();
-  else { applyRole(); showAuth(true); }
+  window.location.reload();
 }
 
 // ── Guest helper ──────────────────────────────────────────────
