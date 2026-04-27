@@ -73,7 +73,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 
 /* Input Table */
 .tbl-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
-.input-table { width: 100%; border-collapse: collapse; background: var(--surface); min-width: 860px; }
+.input-table { width: 100%; border-collapse: collapse; background: var(--surface); min-width: 1060px; }
 .input-table th { background: var(--surface2); font-size: 11px; font-weight: 700; color: var(--text-secondary); padding: 10px 10px; text-align: center; border-bottom: 2px solid var(--border); white-space: nowrap; letter-spacing: .03em; }
 .input-table th.sticky-col { text-align: left; position: sticky; left: 0; z-index: 2; background: var(--surface2); border-right: 1px solid var(--border); }
 .input-table td { padding: 6px 6px; border-bottom: 1px solid var(--surface3); vertical-align: middle; text-align: center; }
@@ -209,6 +209,10 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
           <th style="background:#fffbeb;color:#92400e;border-color:#fde68a">광고비 세팅</th>
           <th>광고비</th>
           <th>광고판매</th>
+          <th>옵션</th>
+          <th>판매수량</th>
+          <th>마진단가</th>
+          <th>소계</th>
           <th>총판매마진</th>
           <th>광고ROAS</th>
           <th>순이익</th>
@@ -680,44 +684,44 @@ function loadDailyTab() {
     const budgetLabel = budget > 0 ? `${(budget/10000).toLocaleString()}만 / ${tgt||'-'}%` : (tgt ? `${tgt}%` : 'AI포함');
     const adRoasCls = adSpend > 0 ? roasClass(adRoas, tgt) : '';
     const hasOpts = opts.length > 0;
+    const N = hasOpts ? opts.length : 1;
+    const rs = N > 1 ? ` rowspan="${N}"` : '';
+    const vmid = 'vertical-align:middle';
 
-    const nameCell = p.name;
+    const nameCell = `<td class="sticky-col"${rs} style="${vmid}">${p.name}</td>`;
+    const settingCell = `<td${rs} style="background:#fffbeb;font-size:11px;font-weight:600;color:${budgetOver?'var(--destructive)':'#92400e'};padding:0 8px;white-space:nowrap;text-align:center;${vmid}">${budgetLabel}</td>`;
+    const adSpendCell = `<td${rs} style="${vmid}"><input type="number" min="0" value="${r.adSpend||''}" placeholder="0" oninput="debounceField('${key}','${p.id}','adSpend',this)"></td>`;
+    const adRevCell = `<td${rs} style="${vmid}"><input type="number" min="0" value="${r.adRevenue||''}" placeholder="0" oninput="debounceField('${key}','${p.id}','adRevenue',this)"></td>`;
+    const tmCell = `<td class="calc-cell" id="ptm-${p.id}"${rs} style="${vmid};color:${hasData?(totalMargin>=0?'var(--success)':'var(--destructive)'):'var(--text-muted)'}">${hasData?fmtNum(totalMargin):'-'}</td>`;
+    const roasCell = `<td class="calc-cell ${adRoasCls}" id="padroas-${p.id}"${rs} style="${vmid}">${adSpend>0?fmtRoas(adRoas):'-'}</td>`;
+    const npCell = `<td class="calc-cell" id="pnp-${p.id}"${rs} style="${vmid};color:${hasData?(netProfit>=0?'var(--success)':'var(--destructive)'):'var(--text-muted)'}">${hasData?fmtNum(netProfit):'-'}</td>`;
 
-    rows += `<tr id="row-main-${p.id}">
-      <td class="sticky-col">${nameCell}</td>
-      <td style="background:#fffbeb;font-size:11px;font-weight:600;color:${budgetOver?'var(--destructive)':'#92400e'};padding:0 8px;white-space:nowrap">${budgetLabel}</td>
-      <td><input type="number" min="0" value="${r.adSpend||''}" placeholder="0" oninput="debounceField('${key}','${p.id}','adSpend',this)"></td>
-      <td><input type="number" min="0" value="${r.adRevenue||''}" placeholder="0" oninput="debounceField('${key}','${p.id}','adRevenue',this)"></td>
-      <td class="calc-cell" id="ptm-${p.id}" style="color:${hasData?(totalMargin>=0?'var(--success)':'var(--destructive)'):'var(--text-muted)'}">${hasData?fmtNum(totalMargin):'-'}</td>
-      <td class="calc-cell ${adRoasCls}" id="padroas-${p.id}">${adSpend>0?fmtRoas(adRoas):'-'}</td>
-      <td class="calc-cell" id="pnp-${p.id}" style="color:${hasData?(netProfit>=0?'var(--success)':'var(--destructive)'):'var(--text-muted)'}">${hasData?fmtNum(netProfit):'-'}</td>
-    </tr>`;
-
-    if (hasOpts) {
-      rows += `<tr id="row-opts-${p.id}"><td colspan="7" style="padding:0;background:var(--surface2)">
-        <table style="width:100%;border-collapse:collapse">
-          <tr style="background:var(--surface3)">
-            <td style="padding:5px 14px 5px 36px;font-size:10px;color:var(--text-muted);font-weight:700">옵션</td>
-            <td style="padding:5px 14px;font-size:10px;color:var(--text-muted);font-weight:700;text-align:center;width:100px">판매수량</td>
-            <td style="padding:5px 14px;font-size:10px;color:var(--text-muted);font-weight:700;text-align:right;width:110px">마진단가</td>
-            <td style="padding:5px 14px;font-size:10px;color:var(--text-muted);font-weight:700;text-align:right;width:110px">소계</td>
-          </tr>`;
-      opts.forEach(opt => {
+    if (!hasOpts) {
+      rows += `<tr id="row-main-${p.id}" style="border-top:2px solid var(--border2)">
+        ${nameCell}${settingCell}${adSpendCell}${adRevCell}
+        <td colspan="4" style="text-align:center;color:var(--text-muted);font-size:11px">-</td>
+        ${tmCell}${roasCell}${npCell}
+      </tr>`;
+    } else {
+      opts.forEach((opt, i) => {
         const qty = +(qtys[opt.name]) || 0;
         const sub = qty * opt.margin;
         const oid = (p.id + '_' + opt.name).replace(/[^\w]/g,'_');
-        rows += `<tr style="border-top:1px solid var(--border)">
-          <td style="padding:6px 14px 6px 36px;font-size:12px;white-space:nowrap">${opt.name}</td>
-          <td style="padding:6px 14px;text-align:center">
-            <input type="number" min="0" value="${qty||''}" placeholder="0"
-              style="width:70px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 6px;font-size:12px;text-align:center;font-family:'DM Mono',monospace;background:var(--surface)"
-              oninput="updateOptQty('${key}','${p.id}','${opt.name}',this,'${oid}')">
-          </td>
-          <td style="padding:6px 14px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;color:var(--text-secondary)">${opt.margin.toLocaleString('ko-KR')}</td>
-          <td id="sub_${oid}" style="padding:6px 14px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:${sub>0?'var(--success)':'var(--text-muted)'}">${qty>0?fmtNum(sub):'-'}</td>
-        </tr>`;
+        const optCells = `
+          <td style="padding:6px 8px;font-size:12px;white-space:nowrap;text-align:left">${opt.name}</td>
+          <td style="padding:6px 4px;text-align:center"><input type="number" min="0" value="${qty||''}" placeholder="0"
+            style="width:70px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 6px;font-size:12px;text-align:center;font-family:'DM Mono',monospace;background:var(--surface)"
+            oninput="updateOptQty('${key}','${p.id}','${opt.name}',this,'${oid}')"></td>
+          <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;color:var(--text-secondary)">${opt.margin.toLocaleString('ko-KR')}</td>
+          <td id="sub_${oid}" style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:${sub>0?'var(--success)':'var(--text-muted)'}">${qty>0?fmtNum(sub):'-'}</td>`;
+        if (i === 0) {
+          rows += `<tr id="row-main-${p.id}" style="border-top:2px solid var(--border2)">
+            ${nameCell}${settingCell}${adSpendCell}${adRevCell}${optCells}${tmCell}${roasCell}${npCell}
+          </tr>`;
+        } else {
+          rows += `<tr>${optCells}</tr>`;
+        }
       });
-      rows += `</table></td></tr>`;
     }
   });
 
@@ -727,6 +731,7 @@ function loadDailyTab() {
     <td style="background:#fffbeb"></td>
     <td class="calc-cell">${fmtNum(t.adSpend)}</td>
     <td class="calc-cell">${fmtNum(t.adRevenue)}</td>
+    <td colspan="4"></td>
     <td class="calc-cell" style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.totalMargin)}</td>
     <td class="calc-cell ${roasClass(t.adRoas,0)}">${fmtRoas(t.adRoas)}</td>
     <td class="calc-cell" style="color:${t.netProfit>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.netProfit)}</td>
@@ -807,11 +812,12 @@ function refreshTotalRow() {
   const trow = document.querySelector('#daily-body .total-row');
   if (!trow) return;
   const cells = trow.querySelectorAll('td');
+  // cols: 0=합계, 1=세팅, 2=광고비, 3=광고판매, 4=colspan옵션영역, 5=총판매마진, 6=광고ROAS, 7=순이익
   if (cells[2]) cells[2].textContent = fmtNum(t.adSpend);
   if (cells[3]) cells[3].textContent = fmtNum(t.adRevenue);
-  if (cells[4]) { cells[4].textContent = fmtNum(t.totalMargin); cells[4].style.color = t.totalMargin >= 0 ? 'var(--success)' : 'var(--destructive)'; }
-  if (cells[5]) cells[5].textContent = fmtRoas(t.adRoas);
-  if (cells[6]) { cells[6].textContent = fmtNum(t.netProfit); cells[6].style.color = t.netProfit >= 0 ? 'var(--success)' : 'var(--destructive)'; }
+  if (cells[5]) { cells[5].textContent = fmtNum(t.totalMargin); cells[5].style.color = t.totalMargin >= 0 ? 'var(--success)' : 'var(--destructive)'; }
+  if (cells[6]) cells[6].textContent = fmtRoas(t.adRoas);
+  if (cells[7]) { cells[7].textContent = fmtNum(t.netProfit); cells[7].style.color = t.netProfit >= 0 ? 'var(--success)' : 'var(--destructive)'; }
 }
 
 // ── Weekly Tab ────────────────────────────────────────────────
