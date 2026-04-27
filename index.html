@@ -138,6 +138,34 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 .save-dot.saving { background: var(--warning); }
 .save-dot.saved { background: var(--success); }
 
+/* Auth */
+.auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(248,250,252,0.97); backdrop-filter: blur(4px); z-index: 99999; display: none; align-items: center; justify-content: center; }
+.auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 40px 32px; width: min(380px,92vw); box-shadow: var(--shadow-md); }
+.auth-logo-wrap { text-align: center; margin-bottom: 24px; }
+.auth-midas { display: inline-flex; flex-direction: column; align-items: center; }
+.auth-midas-text { font-family: 'Montserrat',sans-serif; font-size: 44px; font-weight: 900; letter-spacing: 5px; color: var(--gold); line-height: 1.1; }
+.auth-midas-line { width: 100%; height: 1px; background: var(--gold); margin: 8px 0 10px; }
+.auth-midas-corp { font-family: 'Montserrat',sans-serif; font-size: 11px; font-weight: 400; letter-spacing: 6px; color: #1a1a1a; }
+.auth-sub { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 24px; line-height: 1.6; }
+.auth-input { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; font-size: 14px; background: var(--surface2); color: var(--text-primary); font-family: 'Noto Sans KR',sans-serif; margin-bottom: 8px; transition: border-color .15s, box-shadow .15s; }
+.auth-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); background: var(--surface); }
+.auth-btn { width: 100%; padding: 11px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Noto Sans KR',sans-serif; margin-top: 6px; transition: opacity .15s; }
+.auth-btn:hover { opacity: .88; }
+.auth-btn-guest { background: var(--surface2); color: var(--text-secondary); border: 1px solid var(--border); }
+.auth-btn-guest:hover { background: var(--surface3); opacity: 1; }
+.auth-divider { text-align: center; color: var(--text-muted); font-size: 12px; margin: 14px 0 6px; position: relative; }
+.auth-divider::before,.auth-divider::after { content:''; position:absolute; top:50%; width:40%; height:1px; background:var(--border); }
+.auth-divider::before { left:0; }
+.auth-divider::after { right:0; }
+.auth-err { font-size: 12px; color: var(--destructive); text-align: center; margin-top: 8px; min-height: 18px; }
+#logout-btn { font-size: 11px; color: var(--text-muted); border: 1px solid var(--border); background: none; padding: 3px 10px; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Noto Sans KR',sans-serif; display: none; }
+.role-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 700; font-family: 'Noto Sans KR',sans-serif; }
+.role-badge.admin { background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent-mid); }
+.role-badge.guest { background: var(--surface3); color: var(--text-secondary); border: 1px solid var(--border); }
+
+/* Guest mode — hide margin values and settings tab */
+body.guest-mode .mv { color: transparent !important; text-shadow: 0 0 7px rgba(100,100,100,0.55); user-select: none; }
+body.guest-mode .guest-hide { display: none !important; }
 
 /* Responsive */
 @media (max-width: 600px) {
@@ -188,6 +216,8 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
     <div style="display:flex;align-items:center;gap:10px">
       <span class="save-dot" id="save-dot" title="저장 상태"></span>
       <span class="app-date" id="header-date"></span>
+      <span id="role-badge" class="role-badge" style="display:none"></span>
+      <button id="logout-btn" onclick="signOut()">로그아웃</button>
     </div>
   </div>
 </header>
@@ -198,7 +228,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
     <button class="tab-btn" onclick="switchTab('weekly')">📆 주간 현황</button>
     <button class="tab-btn" onclick="switchTab('monthly')">📈 월간 분석</button>
     <button class="tab-btn" onclick="switchTab('report')">📁 리포트</button>
-    <button class="tab-btn" onclick="switchTab('settings')">⚙️ 설정</button>
+    <button class="tab-btn guest-hide" id="tab-btn-settings" onclick="switchTab('settings')">⚙️ 설정</button>
   </div>
 </nav>
 
@@ -264,10 +294,10 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
   </div>
   <div id="monthly-summary" class="sum-grid" style="margin-bottom:20px"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px" id="monthly-charts">
-    <div class="chart-card"><div class="chart-title">📈 일별 총판매 마진 추이</div><canvas id="chart-profit" height="180"></canvas></div>
+    <div class="chart-card guest-hide"><div class="chart-title">📈 일별 총판매 마진 추이</div><canvas id="chart-profit" height="180"></canvas></div>
     <div class="chart-card"><div class="chart-title">📊 일별 광고 ROAS 추이</div><canvas id="chart-roas" height="180"></canvas></div>
-    <div class="chart-card"><div class="chart-title">🥧 제품별 광고판매 비중</div><canvas id="chart-pie" height="180"></canvas></div>
-    <div class="chart-card"><div class="chart-title">💸 광고비 vs 총판매 마진</div><canvas id="chart-bar" height="180"></canvas></div>
+    <div class="chart-card guest-hide"><div class="chart-title">🥧 제품별 광고판매 비중</div><canvas id="chart-pie" height="180"></canvas></div>
+    <div class="chart-card guest-hide"><div class="chart-title">💸 광고비 vs 총판매 마진</div><canvas id="chart-bar" height="180"></canvas></div>
   </div>
   <div class="section-label sl-violet">📋 주차별 현황</div>
   <div class="tbl-wrap" style="margin-bottom:20px">
@@ -335,6 +365,25 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 
 </main>
 
+<!-- Auth overlay -->
+<div id="auth-overlay" class="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo-wrap">
+      <div class="auth-midas">
+        <span class="auth-midas-text">MIDAS</span>
+        <div class="auth-midas-line"></div>
+        <span class="auth-midas-corp">CORPORATION</span>
+      </div>
+    </div>
+    <div class="auth-sub">쿠팡 매출 분석 시스템<br><span style="font-size:12px">관리자 로그인 또는 게스트로 접속하세요</span></div>
+    <input class="auth-input" type="email" id="auth-email" placeholder="관리자 이메일" autocomplete="email">
+    <input class="auth-input" type="password" id="auth-pw" placeholder="비밀번호" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()">
+    <button class="auth-btn" onclick="signIn()">관리자 로그인</button>
+    <div class="auth-divider">또는</div>
+    <button class="auth-btn auth-btn-guest" onclick="signInGuest()">👀 게스트로 접속 (마진 비공개)</button>
+    <div class="auth-err" id="auth-err"></div>
+  </div>
+</div>
 
 <script>
 // ── Supabase ──────────────────────────────────────────────────
@@ -343,6 +392,7 @@ const _SUPA_KEY = 'sb_publishable_3_2J2g34FVO41PSgfjZzmw_sNcW4Gks';
 const _supa = (window.supabase && _SUPA_URL !== '__SUPABASE_URL__')
   ? window.supabase.createClient(_SUPA_URL, _SUPA_KEY) : null;
 let _user = null;
+let _role = null; // 'admin' | 'guest'
 
 // ── Products (defaults) ───────────────────────────────────────
 const _DEF_PRODUCTS = [
@@ -480,6 +530,56 @@ async function pullFromSupabase() {
 }
 
 
+// ── Auth ──────────────────────────────────────────────────────
+function showAuth(v) {
+  const o = document.getElementById('auth-overlay');
+  o.style.display = v ? 'flex' : 'none';
+}
+function applyRole() {
+  const badge = document.getElementById('role-badge');
+  const logoutBtn = document.getElementById('logout-btn');
+  if (_role === 'admin') {
+    document.body.classList.remove('guest-mode');
+    badge.textContent = '관리자'; badge.className = 'role-badge admin'; badge.style.display = 'inline-block';
+    logoutBtn.style.display = 'inline-block';
+  } else if (_role === 'guest') {
+    document.body.classList.add('guest-mode');
+    badge.textContent = '게스트'; badge.className = 'role-badge guest'; badge.style.display = 'inline-block';
+    logoutBtn.style.display = 'inline-block';
+  } else {
+    document.body.classList.remove('guest-mode');
+    badge.style.display = 'none';
+    logoutBtn.style.display = 'none';
+  }
+}
+async function signIn() {
+  const errEl = document.getElementById('auth-err');
+  errEl.textContent = '';
+  if (!_supa) { _role = 'admin'; applyRole(); showAuth(false); loadDailyTab(); return; }
+  const email = document.getElementById('auth-email').value.trim();
+  const pw = document.getElementById('auth-pw').value;
+  const {error} = await _supa.auth.signInWithPassword({email, password: pw});
+  if (error) errEl.textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
+}
+function signInGuest() {
+  _role = 'guest';
+  sessionStorage.setItem('cp-role', 'guest');
+  showAuth(false);
+  applyRole();
+  loadDailyTab();
+}
+function signOut() {
+  _role = null;
+  sessionStorage.removeItem('cp-role');
+  if (_supa) _supa.auth.signOut();
+  else { applyRole(); showAuth(true); }
+}
+
+// ── Guest helper ──────────────────────────────────────────────
+function mv(val) {
+  return _role === 'guest' ? `<span class="mv">${val}</span>` : String(val);
+}
+
 // ── Calculations ──────────────────────────────────────────────
 function getProductMargin(r, pid) {
   const optInfo = PRODUCT_OPTIONS[pid];
@@ -548,10 +648,10 @@ function renderSummary(elId, days) {
   const el = document.getElementById(elId);
   const adRoasCls = t.adRoas >= 300 ? 'roas-good' : t.adRoas >= 150 ? 'roas-mid' : (t.adSpend > 0 ? 'roas-bad' : '');
   el.innerHTML = `
-    <div class="sum-card"><div class="sum-val">${fmtNum(t.adSalesMargin)}</div><div class="sum-lbl">광고판매 마진 (원)</div></div>
+    <div class="sum-card"><div class="sum-val">${mv(fmtNum(t.adSalesMargin))}</div><div class="sum-lbl">광고판매 마진 (원)</div></div>
     <div class="sum-card"><div class="sum-val">${fmtNum(t.adSpend)}</div><div class="sum-lbl">광고비 (원)</div></div>
     <div class="sum-card"><div class="sum-val ${adRoasCls}">${fmtRoas(t.adRoas)}</div><div class="sum-lbl">광고 ROAS</div></div>
-    <div class="sum-card"><div class="sum-val" style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.totalMargin)}</div><div class="sum-lbl">총판매 마진 (원)</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${mv(fmtNum(t.totalMargin))}</div><div class="sum-lbl">총판매 마진 (원)</div></div>
     <div class="sum-card"><div class="sum-val">${fmtRoas(t.totalRoas)}</div><div class="sum-lbl">총판매 ROAS</div></div>
   `;
 }
@@ -605,7 +705,7 @@ function loadDailyTab() {
     const settingCell = `<td${rs} style="background:#fffbeb;font-size:11px;font-weight:600;color:${budgetOver?'var(--destructive)':'#92400e'};padding:0 8px;white-space:nowrap;text-align:center;${vmid}">${budgetLabel}</td>`;
     const adSpendCell = `<td${rs} style="${vmid}"><input type="number" min="0" value="${r.adSpend||''}" placeholder="0" oninput="debounceField('${key}','${p.id}','adSpend',this)"></td>`;
     const adRoasCell = `<td class="calc-cell ${adRoasCls}" id="padroas-${p.id}"${rs} style="${vmid}">${adSpend>0?fmtRoas(adRoas):'-'}</td>`;
-    const tmCell = `<td class="calc-cell" id="ptm-${p.id}"${rs} style="${vmid};color:${hasData?(totalMargin>=0?'var(--success)':'var(--destructive)'):'var(--text-muted)'}">${hasData?fmtNum(totalMargin):'-'}</td>`;
+    const tmCell = `<td class="calc-cell" id="ptm-${p.id}"${rs} style="${vmid};color:${hasData?(totalMargin>=0?'var(--success)':'var(--destructive)'):'var(--text-muted)'}">${mv(hasData?fmtNum(totalMargin):'-')}</td>`;
     const trCell = `<td class="calc-cell" id="ptroas-${p.id}"${rs} style="${vmid}">${adSpend>0?fmtRoas(totalRoas):'-'}</td>`;
 
     if (!hasOpts) {
@@ -622,14 +722,14 @@ function loadDailyTab() {
         const oid = (p.id + '_' + opt.name).replace(/[^\w]/g,'_');
         const optCells = `
           <td style="padding:6px 8px;font-size:12px;white-space:nowrap;text-align:left">${opt.name}</td>
-          <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;color:var(--text-secondary)">${opt.margin.toLocaleString('ko-KR')}</td>
+          <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;color:var(--text-secondary)">${mv(opt.margin.toLocaleString('ko-KR'))}</td>
           <td style="padding:6px 4px;text-align:center"><input type="number" min="0" value="${qty||''}" placeholder="0"
             style="width:65px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 6px;font-size:12px;text-align:center;font-family:'DM Mono',monospace;background:var(--surface)"
             oninput="updateOptQty('${key}','${p.id}','${opt.name}',this,'${oid}')"></td>
           <td style="padding:6px 4px;text-align:center"><input type="number" min="0" value="${adQty||''}" placeholder="0"
             style="width:65px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 6px;font-size:12px;text-align:center;font-family:'DM Mono',monospace;background:#eff6ff"
             oninput="updateAdQty('${key}','${p.id}','${opt.name}',this,'${oid}')"></td>
-          <td id="adsub_${oid}" style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:${adSub>0?'var(--success)':'var(--text-muted)'}">${adQty>0?fmtNum(adSub):'-'}</td>`;
+          <td id="adsub_${oid}" style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:${adSub>0?'var(--success)':'var(--text-muted)'}">${mv(adQty>0?fmtNum(adSub):'-')}</td>`;
         if (i === 0) {
           rows += `<tr id="row-main-${p.id}" style="border-top:2px solid var(--border2)">
             ${nameCell}${settingCell}${optCells}${adSpendCell}${adRoasCell}${tmCell}${trCell}
@@ -648,7 +748,7 @@ function loadDailyTab() {
     <td colspan="5"></td>
     <td class="calc-cell">${fmtNum(t.adSpend)}</td>
     <td class="calc-cell ${roasClass(t.adRoas,0)}">${fmtRoas(t.adRoas)}</td>
-    <td class="calc-cell" style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.totalMargin)}</td>
+    <td class="calc-cell" style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${mv(fmtNum(t.totalMargin))}</td>
     <td class="calc-cell">${fmtRoas(t.totalRoas)}</td>
   </tr>`;
   tbody.innerHTML = rows;
@@ -707,7 +807,7 @@ function updateAdQty(key, pid, optName, input, oid) {
     if (opt) {
       const sub = qty * opt.margin;
       const subEl = document.getElementById('adsub_'+oid);
-      if (subEl) { subEl.textContent = qty > 0 ? fmtNum(sub) : '-'; subEl.style.color = sub > 0 ? 'var(--success)' : 'var(--text-muted)'; }
+      if (subEl) { subEl.innerHTML = mv(qty > 0 ? fmtNum(sub) : '-'); subEl.style.color = sub > 0 ? 'var(--success)' : 'var(--text-muted)'; }
     }
     refreshProductRow(key, pid);
     refreshTotalRow();
@@ -732,7 +832,7 @@ function refreshProductRow(key, pid) {
   const tmEl = document.getElementById('ptm-'+pid);
   const roasEl = document.getElementById('padroas-'+pid);
   const trEl = document.getElementById('ptroas-'+pid);
-  if (tmEl) { tmEl.textContent = hasData ? fmtNum(totalMargin) : '-'; tmEl.style.color = totalMargin >= 0 ? 'var(--success)' : 'var(--destructive)'; }
+  if (tmEl) { tmEl.innerHTML = mv(hasData ? fmtNum(totalMargin) : '-'); tmEl.style.color = totalMargin >= 0 ? 'var(--success)' : 'var(--destructive)'; }
   if (roasEl) { roasEl.textContent = adSpend > 0 ? fmtRoas(adRoas) : '-'; roasEl.className = 'calc-cell ' + adRoasCls; }
   if (trEl) { trEl.textContent = adSpend > 0 ? fmtRoas(totalRoas) : '-'; }
 }
@@ -745,7 +845,7 @@ function refreshTotalRow() {
   // cols: 0=합계, 1=세팅, 2=colspan5empty, 3=광고비, 4=광고ROAS, 5=총판매마진, 6=총판매ROAS
   if (cells[3]) cells[3].textContent = fmtNum(t.adSpend);
   if (cells[4]) cells[4].textContent = fmtRoas(t.adRoas);
-  if (cells[5]) { cells[5].textContent = fmtNum(t.totalMargin); cells[5].style.color = t.totalMargin >= 0 ? 'var(--success)' : 'var(--destructive)'; }
+  if (cells[5]) { cells[5].innerHTML = mv(fmtNum(t.totalMargin)); cells[5].style.color = t.totalMargin >= 0 ? 'var(--success)' : 'var(--destructive)'; }
   if (cells[6]) cells[6].textContent = fmtRoas(t.totalRoas);
 }
 
@@ -774,18 +874,18 @@ function renderWeeklyDayTable(days) {
     const hasData = t.adSpend > 0 || t.totalMargin > 0;
     html += `<tr>
       <td>${DAYS_KO[i]} (${(d.getMonth()+1)}/${d.getDate()})</td>
-      <td>${hasData?fmtNum(t.adSalesMargin):'-'}</td>
+      <td>${mv(hasData?fmtNum(t.adSalesMargin):'-')}</td>
       <td>${hasData?fmtNum(t.adSpend):'-'}</td>
       <td class="${hasData&&t.adSpend>0?roasClass(t.adRoas,0):''}">${hasData&&t.adSpend>0?fmtRoas(t.adRoas):'-'}</td>
-      <td style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(t.totalMargin):'-'}</td>
+      <td style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${mv(hasData?fmtNum(t.totalMargin):'-')}</td>
       <td>${hasData&&t.adSpend>0?fmtRoas(t.totalRoas):'-'}</td>
     </tr>`;
   });
   const wt = sumDayData(days);
   html += `<tr class="total-row"><td>주간 합계</td>
-    <td>${fmtNum(wt.adSalesMargin)}</td><td>${fmtNum(wt.adSpend)}</td>
+    <td>${mv(fmtNum(wt.adSalesMargin))}</td><td>${fmtNum(wt.adSpend)}</td>
     <td class="${roasClass(wt.adRoas,0)}">${fmtRoas(wt.adRoas)}</td>
-    <td style="color:${wt.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(wt.totalMargin)}</td>
+    <td style="color:${wt.totalMargin>=0?'var(--success)':'var(--destructive)'}">${mv(fmtNum(wt.totalMargin))}</td>
     <td>${fmtRoas(wt.totalRoas)}</td>
   </tr>`;
   el.innerHTML = html + '</tbody>';
@@ -803,18 +903,18 @@ function renderWeeklyProductTable(days) {
     const tgt = targets[p.id] !== undefined ? +targets[p.id] : p.defRoas;
     html += `<tr>
       <td>${p.name}</td>
-      <td>${hasData?fmtNum(r.adSalesMargin):'-'}</td>
+      <td>${mv(hasData?fmtNum(r.adSalesMargin):'-')}</td>
       <td>${hasData?fmtNum(r.adSpend):'-'}</td>
       <td class="${hasData&&r.adSpend>0?roasClass(r.adRoas,tgt):''}">${hasData&&r.adSpend>0?fmtRoas(r.adRoas):'-'}</td>
-      <td style="color:${r.totalMargin>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(r.totalMargin):'-'}</td>
+      <td style="color:${r.totalMargin>=0?'var(--success)':'var(--destructive)'}">${mv(hasData?fmtNum(r.totalMargin):'-')}</td>
       <td>${hasData&&r.adSpend>0?fmtRoas(r.totalRoas):'-'}</td>
     </tr>`;
   });
   const wt = sumDayData(days);
   html += `<tr class="total-row"><td>합계</td>
-    <td>${fmtNum(wt.adSalesMargin)}</td><td>${fmtNum(wt.adSpend)}</td>
+    <td>${mv(fmtNum(wt.adSalesMargin))}</td><td>${fmtNum(wt.adSpend)}</td>
     <td>${fmtRoas(wt.adRoas)}</td>
-    <td style="color:${wt.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(wt.totalMargin)}</td>
+    <td style="color:${wt.totalMargin>=0?'var(--success)':'var(--destructive)'}">${mv(fmtNum(wt.totalMargin))}</td>
     <td>${fmtRoas(wt.totalRoas)}</td>
   </tr>`;
   el.innerHTML = html + '</tbody>';
@@ -899,17 +999,17 @@ function renderMonthlyWeekTable(days, monthDate) {
     const fmt = d=>`${d.getMonth()+1}/${d.getDate()}`;
     html += `<tr>
       <td>${i+1}주차 (${fmt(wk[0])}~${fmt(wk[wk.length-1])})</td>
-      <td>${fmtNum(t.adSalesMargin)}</td><td>${fmtNum(t.adSpend)}</td>
+      <td>${mv(fmtNum(t.adSalesMargin))}</td><td>${fmtNum(t.adSpend)}</td>
       <td class="${roasClass(t.adRoas,0)}">${fmtRoas(t.adRoas)}</td>
-      <td style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(t.totalMargin)}</td>
+      <td style="color:${t.totalMargin>=0?'var(--success)':'var(--destructive)'}">${mv(fmtNum(t.totalMargin))}</td>
       <td>${fmtRoas(t.totalRoas)}</td>
     </tr>`;
   });
   const mt = sumDayData(days);
   html += `<tr class="total-row"><td>월간 합계</td>
-    <td>${fmtNum(mt.adSalesMargin)}</td><td>${fmtNum(mt.adSpend)}</td>
+    <td>${mv(fmtNum(mt.adSalesMargin))}</td><td>${fmtNum(mt.adSpend)}</td>
     <td>${fmtRoas(mt.adRoas)}</td>
-    <td style="color:${mt.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(mt.totalMargin)}</td>
+    <td style="color:${mt.totalMargin>=0?'var(--success)':'var(--destructive)'}">${mv(fmtNum(mt.totalMargin))}</td>
     <td>${fmtRoas(mt.totalRoas)}</td>
   </tr>`;
   el.innerHTML = html + '</tbody>';
@@ -927,18 +1027,18 @@ function renderMonthlyProductTable(days) {
     const tgt = targets[p.id] !== undefined ? +targets[p.id] : p.defRoas;
     html += `<tr>
       <td>${p.name}</td>
-      <td>${hasData?fmtNum(r.adSalesMargin):'-'}</td>
+      <td>${mv(hasData?fmtNum(r.adSalesMargin):'-')}</td>
       <td>${hasData?fmtNum(r.adSpend):'-'}</td>
       <td class="${hasData&&r.adSpend>0?roasClass(r.adRoas,tgt):''}">${hasData&&r.adSpend>0?fmtRoas(r.adRoas):'-'}</td>
-      <td style="color:${r.totalMargin>=0?'var(--success)':'var(--destructive)'}">${hasData?fmtNum(r.totalMargin):'-'}</td>
+      <td style="color:${r.totalMargin>=0?'var(--success)':'var(--destructive)'}">${mv(hasData?fmtNum(r.totalMargin):'-')}</td>
       <td>${hasData&&r.adSpend>0?fmtRoas(r.totalRoas):'-'}</td>
     </tr>`;
   });
   const mt = sumDayData(days);
   html += `<tr class="total-row"><td>합계</td>
-    <td>${fmtNum(mt.adSalesMargin)}</td><td>${fmtNum(mt.adSpend)}</td>
+    <td>${mv(fmtNum(mt.adSalesMargin))}</td><td>${fmtNum(mt.adSpend)}</td>
     <td>${fmtRoas(mt.adRoas)}</td>
-    <td style="color:${mt.totalMargin>=0?'var(--success)':'var(--destructive)'}">${fmtNum(mt.totalMargin)}</td>
+    <td style="color:${mt.totalMargin>=0?'var(--success)':'var(--destructive)'}">${mv(fmtNum(mt.totalMargin))}</td>
     <td>${fmtRoas(mt.totalRoas)}</td>
   </tr>`;
   el.innerHTML = html + '</tbody>';
@@ -1202,6 +1302,7 @@ function addProduct() {
 
 // ── Tab Switch ────────────────────────────────────────────────
 function switchTab(t) {
+  if (_role === 'guest' && t === 'settings') return;
   document.querySelectorAll('.tab-btn').forEach(el => el.classList.toggle('active', el.getAttribute('onclick') === `switchTab('${t}')`));
   document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-'+t).classList.add('active');
@@ -1223,7 +1324,22 @@ function initHeader() {
 function init() {
   loadProductsConfig();
   initHeader();
-  loadDailyTab();
+  if (sessionStorage.getItem('cp-role') === 'guest') {
+    _role = 'guest'; applyRole(); showAuth(false); loadDailyTab(); return;
+  }
+  if (_supa) {
+    _supa.auth.onAuthStateChange(async (event, session) => {
+      _user = session?.user || null;
+      if (_user) {
+        _role = 'admin'; applyRole(); showAuth(false);
+        await pullFromSupabase(); loadProductsConfig(); loadDailyTab();
+      } else {
+        _role = null; applyRole(); showAuth(true);
+      }
+    });
+  } else {
+    _role = 'admin'; applyRole(); showAuth(false); loadDailyTab();
+  }
 }
 
 init();
